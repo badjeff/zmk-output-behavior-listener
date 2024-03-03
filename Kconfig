@@ -1,0 +1,29 @@
+# Sensor data simulator
+#
+# Copyright (c) 2019 Nordic Semiconductor
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_LISTENER := zmk,output-behavior-listener
+config ZMK_OUTPUT_BEHAVIOR_LISTENER
+		bool
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_LISTENER))
+
+DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_GENERIC := zmk,output-behavior-geenric
+config ZMK_OUTPUT_BEHAVIOR_GENERIC
+		bool
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_GENERIC))
+
+DT_COMPAT_ZMK_OUTPUT_GENERIC := zmk,output-generic
+config ZMK_OUTPUT_GENERIC
+		bool
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_GENERIC))
+
+config ZMK_OUTPUT_DEFAULT_FORCE
+    int "Force of output on key pressed"
+    default 128
+
+config ZMK_OUTPUT_DEFAULT_DURATION
+    int "Duration of output on key pressed"
+    default 20

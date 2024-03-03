@@ -1,0 +1,12 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  Generic driver for controlling output gpios
+
+compatible: "zmk,output-generic"
+
+properties:
+  control-gpios:
+    type: phandle-array
+    required: true

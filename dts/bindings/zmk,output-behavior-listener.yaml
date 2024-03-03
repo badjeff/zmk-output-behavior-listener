@@ -1,0 +1,17 @@
+# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  Listener to subscribe to input events and send HID updates after processing
+
+compatible: "zmk,output-behavior-listener"
+
+properties:
+  sources:
+    type: array
+    default: [-1]
+  layers:
+    type: array
+    default: [-1]
+  bindings:
+    type: phandle-array
