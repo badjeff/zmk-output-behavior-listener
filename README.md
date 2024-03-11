@@ -60,13 +60,13 @@ Now, update your `shield.keymap` adding the behaviors.
                         OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
                         >;
 
-                /* setup output behavior to output two phase vibration */
+                /* setup output behavior to output two phase vibration or LED animation */
                 bindings = < &ob_lar0_in &ob_lar0_out >;
         };
 
         /* setup TWO phases of vibration output on same LRA device (<&lra0>) */
-        /* phase 1: -(delay 1ms)---(vibvibate 30ms) */
-        /* phase 2: -(delay 133ms)-----------------------(vibvibate 10ms) */
+        /* phase 1: -(delay 1ms)---(vibrate 30ms) */
+        /* phase 2: -(delay 133ms)-----------------------(vibrate 10ms) */
         ob_lar0_in: ob_generic_lar0_in {
                 compatible = "zmk,output-behavior-generic";
                 #binding-cells = <0>;
