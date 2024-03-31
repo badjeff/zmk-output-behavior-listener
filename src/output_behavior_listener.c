@@ -33,6 +33,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 struct output_behavior_listener_config {
     uint8_t sources_count;
     enum output_source sources[OUTPUT_SOURCE__MAX__];
+    bool has_position;
+    uint32_t position;
+    bool invert_state;
     uint8_t layers_count;
     uint8_t layers[ZMK_KEYMAP_LAYERS_LEN];
     uint8_t bindings_count;
@@ -52,6 +55,11 @@ struct output_behavior_listener_config {
     static const struct output_behavior_listener_config config_##n = {                             \
         .sources_count = DT_INST_PROP_LEN(n, sources),                                             \
         .sources = DT_INST_PROP(n, sources),                                                       \
+        .has_position = DT_INST_NODE_HAS_PROP(n, position),                                        \
+        .position = COND_CODE_1(                                                                   \
+            DT_INST_NODE_HAS_PROP(n, position),                                                    \
+            (DT_INST_PROP(n, position)), (0)),                                                     \
+        .invert_state = DT_INST_PROP(n, invert_state),                                             \
         .layers_count = DT_INST_PROP_LEN(n, layers),                                               \
         .layers = DT_INST_PROP(n, layers),                                                         \
         .bindings_count = COND_CODE_1(                                                             \
@@ -84,6 +92,20 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
     }
     if (!active_layer_check) {
         return false;
+    }
+
+    bool cfg_state = cfg->invert_state ? false : true;
+    if (evt->source == OUTPUT_SOURCE_LAYER_STATE_CHANGE
+    ||  evt->source == OUTPUT_SOURCE_POSITION_STATE_CHANGE
+    ||  evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
+    // ||  evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE
+    ) {
+        if (evt->state != cfg_state) {
+            return false;
+        }
+        if (cfg->has_position && evt->position != cfg->position) {
+            return false;
+        }
     }
 
     bool intercepted = false;
@@ -186,26 +208,26 @@ static int output_event_listener(const zmk_event_t *ev) {
 
     const struct zmk_layer_state_changed *lay_ev;
     if ((lay_ev = as_zmk_layer_state_changed(ev)) != NULL) {
-        if (lay_ev->state) {
-            e.source = OUTPUT_SOURCE_LAYER_STATE_CHANGE;
-            raise_zmk_output_event(e);
-        }
+        e.source = OUTPUT_SOURCE_LAYER_STATE_CHANGE;
+        e.position = lay_ev->layer;
+        e.state = lay_ev->state;
+        raise_zmk_output_event(e);
     }
 
     const struct zmk_position_state_changed *pos_ev;
     if ((pos_ev = as_zmk_position_state_changed(ev)) != NULL) {
-        if (pos_ev->state) {
-            e.source = OUTPUT_SOURCE_POSITION_STATE_CHANGE;
-            raise_zmk_output_event(e);
-        }
+        e.source = OUTPUT_SOURCE_POSITION_STATE_CHANGE;
+        e.position = pos_ev->position;
+        e.state = pos_ev->state;
+        raise_zmk_output_event(e);
     }
 
     const struct zmk_keycode_state_changed *kc_ev;
     if ((kc_ev = as_zmk_keycode_state_changed(ev)) != NULL) {
-        if (kc_ev->state) {
-            e.source = OUTPUT_SOURCE_KEYCODE_STATE_CHANGE;
-            raise_zmk_output_event(e);
-        }
+        e.source = OUTPUT_SOURCE_KEYCODE_STATE_CHANGE;
+        e.position = kc_ev->keycode;
+        e.state = kc_ev->state;
+        raise_zmk_output_event(e);
     }
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 
@@ -221,27 +243,39 @@ ZMK_SUBSCRIPTION(output_event_listener, zmk_layer_state_changed);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_position_state_changed);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_keycode_state_changed);
 
-#if IS_ENABLED(CONFIG_INPUT)
+// #if IS_ENABLED(CONFIG_INPUT)
 
-void ouput_input_handler(struct input_event *evt) {
-    switch (evt->type) {
-    case INPUT_EV_KEY:
-        if (evt->value > 0) {
-            struct zmk_output_event e = (struct zmk_output_event){
-                .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-                .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
-                .timestamp = k_uptime_get()
-            };
-            e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
-            raise_zmk_output_event(e);
-        }
-        break;
-    }
-}
+// void ouput_input_handler(struct input_event *evt) {
+//     switch (evt->type) {
+//     case INPUT_EV_KEY:
+//         switch (evt->code) {
+//         case INPUT_BTN_0:
+//         case INPUT_BTN_1:
+//         case INPUT_BTN_2:
+//         case INPUT_BTN_3:
+//         case INPUT_BTN_4:
+//             if (evt->value > 0) {
+//                 struct zmk_output_event e = (struct zmk_output_event){
+//                     .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+//                     .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+//                     .timestamp = k_uptime_get()
+//                 };
+//                 e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
+//                 e.position = 1 + evt->code - INPUT_BTN_0;
+//                 e.state = true;
+//                 // raise_zmk_output_event(e);
+//             }
+//             break;
+//         default:
+//             break;
+//         }
+//         break;
+//     }
+// }
 
-INPUT_CALLBACK_DEFINE(NULL, ouput_input_handler);
+// INPUT_CALLBACK_DEFINE(NULL, ouput_input_handler);
 
-#endif /* IS_ENABLED(CONFIG_INPUT) */
+// #endif /* IS_ENABLED(CONFIG_INPUT) */
 
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 

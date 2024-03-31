@@ -13,7 +13,7 @@ enum output_source {
     OUTPUT_SOURCE_LAYER_STATE_CHANGE,
     OUTPUT_SOURCE_POSITION_STATE_CHANGE,
     OUTPUT_SOURCE_KEYCODE_STATE_CHANGE,
-    OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE,
+    // OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE,
     OUTPUT_SOURCE_TRANSPORT,
     OUTPUT_SOURCE__MAX__,
 };
@@ -21,6 +21,8 @@ enum output_source {
 struct zmk_output_event {
     enum output_source source;
     uint8_t layer;
+    uint32_t position;
+    bool state;
     uint8_t force;
     uint8_t duration;
     uint64_t timestamp;

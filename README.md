@@ -30,7 +30,7 @@ Now, update your `board.overlay` adding the necessary bits (update the pins for 
 	lra0: output_generic_0 {
 		compatible = "zmk,output-generic";
 		#binding-cells = <0>;
-		control-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+		control-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
 	};
 };
 ```
@@ -43,8 +43,7 @@ Now, update your `shield.keymap` adding the behaviors.
 #define OUTPUT_SOURCE_LAYER_STATE_CHANGE        1
 #define OUTPUT_SOURCE_POSITION_STATE_CHANGE     2
 #define OUTPUT_SOURCE_KEYCODE_STATE_CHANGE      3
-#define OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE 4
-#define OUTPUT_SOURCE_TRANSPORT                 5
+#define OUTPUT_SOURCE_TRANSPORT                 4
 
 / {
         /* setup listen to monitor layer_state_change and keycode_state_change */
@@ -68,22 +67,57 @@ Now, update your `shield.keymap` adding the behaviors.
         /* phase 1: -(delay 1ms)---(vibrate 30ms) */
         /* phase 2: -(delay 133ms)-----------------------(vibrate 10ms) */
         ob_lar0_in: ob_generic_lar0_in {
-                compatible = "zmk,output-behavior-generic";
-                #binding-cells = <0>;
-                device = <&lra0>;
-                delay = <1>;
-                time-to-live-ms = <30>;
-                /* reserved, not-implement-yet */
-                force = <80>;
+                compatible = "zmk,output-behavior-generic"; #binding-cells = <0>;
+                device = <&lra0>; delay = <1>; time-to-live-ms = <30>;
         };
         ob_lar0_out: ob_generic_lar0_out {
-                compatible = "zmk,output-behavior-generic";
-                #binding-cells = <0>;
-                device = <&lra0>;
-                delay = <133>;
-                time-to-live-ms = <10>;
-                /* reserved, not-implement-yet */
-                force = <30>;
+                compatible = "zmk,output-behavior-generic"; #binding-cells = <0>;
+                device = <&lra0>; delay = <133>; time-to-live-ms = <10>;
+        };
+
+        /*** ...and, more user cases on below... ***/
+
+        /* setup listener on enter raise layer */
+        lar0_obl__enter_raise_layer {
+                compatible = "zmk,output-behavior-listener";
+                layers = < RAISE >;
+                sources = < OUTPUT_SOURCE_LAYER_STATE_CHANGE >;
+                bindings = < &ob_lar0_in &ob_lar0_out >;
+        };
+
+        /* setup listener on back to default layer from another layer */
+        lar0_obl__back_to_default_layer {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                sources = < OUTPUT_SOURCE_LAYER_STATE_CHANGE >;
+                
+                /* optional, to catch the state becomes negative boolean on state_changed */
+                invert-state;
+                
+                /* optional, specify a layer which is leaving from */
+                position = < RAISE >;
+
+                bindings = < &ob_lar0_out >;
+        };
+
+        /* setup listener on press key on position 0 */
+        lar0_obl__press_position_0 {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                sources = < OUTPUT_SOURCE_POSITION_STATE_CHANGE >;
+                /* optional, set position of switch to bind to */
+                position = <0>;
+                bindings = < &ob_lar0_in >;
+        };
+
+        /* setup listener on press keycode 'D' */
+        lar0_obl__press_key_code_D {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                sources = < OUTPUT_SOURCE_KEYCODE_STATE_CHANGE >;
+                /* optional, set keycode filter here */
+                position = < 0x07 >;
+                bindings = < &ob_lar0_in >;
         };
 
         keymap {

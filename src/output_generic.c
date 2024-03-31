@@ -80,17 +80,17 @@ static const struct output_generic_api api = {
     .get = output_generic_get,
 };
 
-static struct output_generic_data data = {
-    .status = false,
-};
-
-static const struct output_generic_config config = {
-    .control = GPIO_DT_SPEC_INST_GET(0, control_gpios),
-};
-
 #define ZMK_OUTPUT_INIT_PRIORITY 81
 
-DEVICE_DT_INST_DEFINE(0, output_generic_init, DEVICE_DT_INST_GET(0), &data, &config,
-                      POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
+#define OG_INST(n)                                                             \
+    static struct output_generic_data data_##n = { .status = false, };         \
+    static const struct output_generic_config config_##n = {                   \
+        .control = GPIO_DT_SPEC_INST_GET(n, control_gpios),                    \
+    };                                                                         \
+    DEVICE_DT_INST_DEFINE(0, output_generic_init, DEVICE_DT_INST_GET(n),       \
+                          &data_##n, &config_##n,                              \
+                          POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
+
+DT_INST_FOREACH_STATUS_OKAY(OG_INST)
 
 // #endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */

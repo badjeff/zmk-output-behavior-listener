@@ -13,5 +13,9 @@ properties:
   layers:
     type: array
     default: [-1]
+  position:
+    type: int
+  invert-state:
+    type: boolean
   bindings:
     type: phandle-array
