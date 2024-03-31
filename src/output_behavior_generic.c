@@ -123,6 +123,8 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
     .binding_pressed = ob_generic_binding_pressed,
 };
 
+#define ZMK_OUTPUT_INIT_PRIORITY 81
+
 #define KP_INST(n)                                                                                 \
     static struct output_behavior_geenric_data output_behavior_geenric_data_##n = {};              \
     static struct output_behavior_geenric_config output_behavior_geenric_config_##n = {            \
@@ -135,7 +137,7 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
     BEHAVIOR_DT_INST_DEFINE(n, output_behavior_to_init, NULL,                                      \
                             &output_behavior_geenric_data_##n,                                     \
                             &output_behavior_geenric_config_##n,                                   \
-                            POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,                      \
+                            POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY,                                 \
                             &output_behavior_geenric_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(KP_INST)
