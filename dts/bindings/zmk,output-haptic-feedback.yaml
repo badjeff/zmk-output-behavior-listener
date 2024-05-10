@@ -1,0 +1,16 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  Generic driver for controlling output gpios
+
+compatible: "zmk,output-haptic-feedback"
+
+properties:
+  driver:
+    type: string
+    enum:
+      - drv2605
+    description: ERM / LRA haptic feebback driver to use
+  device:
+    type: phandle

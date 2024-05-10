@@ -80,7 +80,7 @@ static const struct output_generic_api api = {
     .get = output_generic_get,
 };
 
-#define ZMK_OUTPUT_INIT_PRIORITY 81
+#define ZMK_OUTPUT_INIT_PRIORITY 91
 
 #define OG_INST(n)                                                             \
     static struct output_generic_data data_##n = { .status = false, };         \

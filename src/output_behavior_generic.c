@@ -62,8 +62,8 @@ static void ob_generic_deactivate_cb(struct k_work *work) {
     struct output_behavior_geenric_data *data = CONTAINER_OF(work_delayable, 
                                                              struct output_behavior_geenric_data,
                                                              deactivate_work);
-    // const struct output_behavior_geenric_config *cfg = data->dev->config;
-    if (!data->active) {
+    const struct output_behavior_geenric_config *cfg = data->dev->config;
+    if (!data->active && cfg->time_to_live_ms) {
         return;
     }
     LOG_DBG("deactivate");
@@ -77,7 +77,7 @@ static void ob_generic_activate_cb(struct k_work *work) {
                                                              struct output_behavior_geenric_data,
                                                              activate_work);
     const struct output_behavior_geenric_config *cfg = data->dev->config;
-    if (data->active) {
+    if (data->active && cfg->time_to_live_ms) {
         return;
     }
     if (!data->active) {
@@ -91,6 +91,8 @@ static void ob_generic_activate_cb(struct k_work *work) {
     if (cfg->time_to_live_ms) {
         LOG_DBG("sche ttl work %d", cfg->time_to_live_ms);
         k_work_schedule(&data->deactivate_work, K_MSEC(cfg->time_to_live_ms));
+    } else {
+        data->active = false;
     }
 }
 
@@ -123,7 +125,7 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
     .binding_pressed = ob_generic_binding_pressed,
 };
 
-#define ZMK_OUTPUT_INIT_PRIORITY 81
+#define ZMK_OUTPUT_INIT_PRIORITY 92
 
 #define KP_INST(n)                                                                                 \
     static struct output_behavior_geenric_data output_behavior_geenric_data_##n = {};              \

@@ -28,7 +28,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/mouse_button_state_changed.h>
 
 #include <zmk/output/output_event.h>
-#include <zmk/output/output_generic.h>
+#include <zmk/output/output_haptic_feedback.h>
 
 struct output_behavior_listener_config {
     uint8_t sources_count;
