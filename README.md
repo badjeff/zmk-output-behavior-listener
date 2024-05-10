@@ -6,7 +6,7 @@ This module add behaviors to output device for ZMK.
 
 It allow config a feedback of state change event by binding behaviors to feedback devices, such as, eccentric rotating mass (ERM) motors, Linear Resonant Actuator (LRA) vibration motors, or LED indicators. It is made for simulating various sensations by vibrating in a designed sequence.
 
-To drive LRA, it is recommmended to drive it with a [DRV2605L Haptic Motor Controller](https://www.adafruit.com/product/2305) using [zmk-drv2605-driver](https://github.com/badjeff/zmk-drv2605-driver) module.
+To drive LRA, it is recommended to drive it with [DRV2605L Haptic Motor Controller](https://www.adafruit.com/product/2305) and [zmk-drv2605-driver](https://github.com/badjeff/zmk-drv2605-driver).
 
 ## Installation
 
