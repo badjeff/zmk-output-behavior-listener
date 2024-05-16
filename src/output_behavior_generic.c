@@ -46,7 +46,7 @@ static void ob_geenric_set_output_enable(struct output_behavior_geenric_data *da
 
     const struct output_generic_api *api = (const struct output_generic_api *)output_dev->api;
     if (api->enable == NULL) {
-        LOG_WRN("No enable() api assigned on device %s", cfg->output_dev->name);
+        LOG_WRN("No enable() api assigned on device %s", output_dev->name);
         return;
     }
 

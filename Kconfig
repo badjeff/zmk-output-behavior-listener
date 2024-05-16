@@ -25,6 +25,11 @@ config ZMK_OUTPUT_HAPTIC_FEEDBACK
 		bool
 		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_HAPTIC_FEEDBACK))
 
+DT_COMPAT_ZMK_OUTPUT_SPLIT_OUTOUT_RELAY := zmk,output-split-output-relay
+config ZMK_OUTPUT_SPLIT_OUTOUT_RELAY
+		bool
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_SPLIT_OUTOUT_RELAY))
+
 config ZMK_OUTPUT_DEFAULT_FORCE
     int "Force of output on key pressed"
     default 128

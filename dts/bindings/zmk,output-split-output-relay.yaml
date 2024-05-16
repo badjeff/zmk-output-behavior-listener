@@ -1,0 +1,7 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  Generic driver for controlling output to split output relay
+
+compatible: "zmk,output-split-output-relay"

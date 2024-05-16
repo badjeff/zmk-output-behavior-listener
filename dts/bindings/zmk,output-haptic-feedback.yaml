@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 description: |
-  Generic driver for controlling output gpios
+  Generic driver for controlling output haptic feedback motor driver
 
 compatible: "zmk,output-haptic-feedback"
 
