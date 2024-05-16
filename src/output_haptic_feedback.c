@@ -44,7 +44,7 @@ static int output_haptic_feedback_enable(const struct device *dev, uint8_t force
 #if IS_ENABLED(CONFIG_DRV2605)
     if (config->fb_drv == OUTPUT_HAPTIC_FEEDBACK_DRIVER_DRV2605) {
         int err = 0;
-    	struct sensor_value val;
+    	struct sensor_value val = { .val1 = 0, .val2 = 0 };
 
         val.val1 = 0; // slot 0
         val.val2 = force; // waveformm
@@ -102,7 +102,7 @@ static int output_haptic_feedback_disable(const struct device *dev) {
 #if IS_ENABLED(CONFIG_DRV2605)
     if (config->fb_drv == OUTPUT_HAPTIC_FEEDBACK_DRIVER_DRV2605) {
         int err = 0;
-    	struct sensor_value val;
+    	struct sensor_value val = { .val1 = 0, .val2 = 0 };
         err = sensor_attr_set(fb_dev, SENSOR_CHAN_ALL,
                               (enum sensor_attribute) DRV2605_ATTR_STOP, &val);
         if (err) {
