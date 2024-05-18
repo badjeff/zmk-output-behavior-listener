@@ -24,13 +24,15 @@ struct output_behavior_geenric_config {
     const struct device *output_dev;
     uint32_t delay;
     uint32_t time_to_live_ms;
-    bool momentum;
     bool toggle;
     int16_t force;
+    bool momentum;
+    int16_t momentum_force;
 };
 
 struct output_behavior_geenric_data {
     bool active;
+    bool is_momentum;
     struct k_work_delayable activate_work;
     struct k_work_delayable deactivate_work;
     const struct device *dev;
@@ -52,7 +54,8 @@ static void ob_geenric_set_output_enable(struct output_behavior_geenric_data *da
     }
 
     if (data->active) {
-        api->enable(output_dev, cfg->force);
+        api->enable(output_dev, data->is_momentum ? cfg->momentum_force : cfg->force);
+        data->is_momentum = false;
     } else {
         api->disable(output_dev);
     }
@@ -103,7 +106,8 @@ static int ob_generic_binding_released(struct zmk_behavior_binding *binding,
     struct output_behavior_geenric_data *data = (struct output_behavior_geenric_data *)dev->data;
     const struct output_behavior_geenric_config *cfg = dev->config;
     if (cfg->momentum) {
-        k_work_schedule(&data->deactivate_work, K_MSEC(1));
+        data->is_momentum = true;
+        k_work_schedule(&data->activate_work, K_MSEC(1));
     }
     return ZMK_BEHAVIOR_TRANSPARENT;
 }
@@ -145,9 +149,10 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
         .output_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                                   \
         .delay = DT_INST_PROP(n, delay),                                                           \
         .time_to_live_ms = DT_INST_PROP(n, time_to_live_ms),                                       \
-        .momentum = DT_INST_PROP(n, momentum),                                                     \
         .toggle = DT_INST_PROP(n, toggle),                                                         \
         .force = DT_INST_PROP(n, force),                                                           \
+        .momentum = DT_INST_PROP(n, momentum),                                                     \
+        .momentum_force = DT_INST_PROP(n, momentum_force),                                         \
     };                                                                                             \
     BEHAVIOR_DT_INST_DEFINE(n, output_behavior_to_init, NULL,                                      \
                             &output_behavior_geenric_data_##n,                                     \

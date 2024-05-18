@@ -18,11 +18,13 @@ properties:
   time-to-live-ms:
     type: int
     default: 0
-  momentum:
-    type: boolean
   toggle:
     type: boolean
   force:
     type: int
     default: 0
-  
+  momentum:
+    type: boolean
+  momentum-force:
+    type: int
+    default: 0

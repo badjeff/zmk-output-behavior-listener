@@ -1,0 +1,13 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  PWM driver for controlling output gpios
+
+compatible: "zmk,output-pwm"
+
+properties:
+  pwms:
+    required: true
+    type: phandle-array
+    description: PWM specifier driving the output.

@@ -47,6 +47,13 @@ Now, update your `board.overlay` adding the necessary bits (update the pins for 
                 /* labled i2c device with [zmk-drv2605-driver] */
 		device = <&drv2605_0>;
 	};
+
+        /* setup wired PWM device to control a LED */
+	pwm_led0: output_pwm_0 {
+		compatible = "zmk,output-pwm";
+		#binding-cells = <0>;
+		pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+	};
 };
 ```
 
@@ -94,9 +101,35 @@ Now, update your `shield.keymap` adding the behaviors.
         ob_lra0: ob_generic_lra0_in {
                 compatible = "zmk,output-behavior-generic"; #binding-cells = <0>;
                 device = <&lra0>;
+
                 /* force will be convrt to waveformm effect from DRV2605 library */
                 /* NOTE: <7> is Soft Bump at 100% */
                 force = <7>;
+        };
+
+        ob_lra0: ob_generic_lra0_in {
+                compatible = "zmk,output-pwm"; #binding-cells = <0>;
+                device = <&pwm_led0>;
+
+                /* force will be convrt to waveformm effect from DRV2605 library */
+                /* NOTE: <7> is Soft Bump at 100% */
+                force = <7>;
+        };
+
+        /* setup behavior for PWM device */
+        ob_pwn0: ob_generic_pwn0 {
+                compatible = "zmk,output-behavior-generic"; #binding-cells = <0>;
+                device = <&pwm_led0>;
+                
+                /* set duty cycle of pwm, max 256 */
+                /* pwm duty cycle raise to <180> on key press */
+                force = <180>;
+
+                /* enable momentum to trigger on both on all state change */
+                momentum;
+
+                /* pwm duty cycle drop to <12> on key release */
+                momentum-force = <12>;
         };
 
         /*** ...and, more user cases on below... ***/
@@ -155,6 +188,21 @@ Now, update your `shield.keymap` adding the behaviors.
                 /* set keycode filter here */
                 position = < 0x14 >;
                 bindings = < &ob_lra0 >;
+                
+                /* enable to catch all state change that include key press and release */
+                /* ensure to stop on-going LRA effect immediately on key released */
+                all-state;
+        };
+
+        /* setup listener on press keycode 'Q', and feedback via LRA */
+        pwm0_obl__press_key_code_P {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                sources = < OUTPUT_SOURCE_KEYCODE_STATE_CHANGE >;
+
+                /* set keycode filter here */
+                position = < 0x13 >;
+                bindings = < &ob_pwn0 >;
                 
                 /* enable to catch all state change that include key press and release */
                 /* ensure to stop on-going LRA effect immediately on key released */

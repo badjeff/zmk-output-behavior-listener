@@ -25,6 +25,12 @@ config ZMK_OUTPUT_HAPTIC_FEEDBACK
 		bool
 		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_HAPTIC_FEEDBACK))
 
+DT_COMPAT_ZMK_OUTPUT_PWM := zmk,output-pwm
+config ZMK_OUTPUT_PWM
+		bool
+		select PWM
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_PWM))
+
 DT_COMPAT_ZMK_OUTPUT_SPLIT_OUTOUT_RELAY := zmk,output-split-output-relay
 config ZMK_OUTPUT_SPLIT_OUTOUT_RELAY
 		bool
