@@ -36,6 +36,7 @@ struct output_behavior_listener_config {
     bool has_position;
     uint32_t position;
     bool invert_state;
+    bool all_state;
     uint8_t layers_count;
     uint8_t layers[ZMK_KEYMAP_LAYERS_LEN];
     uint8_t bindings_count;
@@ -60,6 +61,7 @@ struct output_behavior_listener_config {
             DT_INST_NODE_HAS_PROP(n, position),                                                    \
             (DT_INST_PROP(n, position)), (0)),                                                     \
         .invert_state = DT_INST_PROP(n, invert_state),                                             \
+        .all_state = DT_INST_PROP(n, all_state),                                                   \
         .layers_count = DT_INST_PROP_LEN(n, layers),                                               \
         .layers = DT_INST_PROP(n, layers),                                                         \
         .bindings_count = COND_CODE_1(                                                             \
@@ -100,7 +102,7 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
     ||  evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
     // ||  evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE
     ) {
-        if (evt->state != cfg_state) {
+        if (evt->state != cfg_state && !cfg->all_state) {
             return false;
         }
         if (cfg->has_position && evt->position != cfg->position) {
@@ -124,13 +126,19 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
         const struct behavior_driver_api *api = (const struct behavior_driver_api *)behavior->api;
         int ret = 0;
 
-        if (api->binding_pressed) {
+        if (api->binding_pressed || api->binding_released) {
 
             struct zmk_behavior_binding_event event = {
                 .layer = layer, .timestamp = k_uptime_get(),
                 .position = (struct zmk_output_event *)evt, // util uint32_t to pass event ptr :)
             };
-            ret = api->binding_pressed(&binding, event);
+
+            if (api->binding_pressed && evt->state) {
+                ret = api->binding_pressed(&binding, event);
+            }
+            else if (api->binding_released && !evt->state) {
+                ret = api->binding_released(&binding, event);
+            }
 
         }
         else if (api->sensor_binding_process) {

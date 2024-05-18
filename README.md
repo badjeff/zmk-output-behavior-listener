@@ -129,7 +129,8 @@ Now, update your `shield.keymap` adding the behaviors.
                 compatible = "zmk,output-behavior-listener";
                 layers = < DEFAULT >;
                 sources = < OUTPUT_SOURCE_POSITION_STATE_CHANGE >;
-                /* optional, set position of switch to bind to */
+
+                /* set position of switch to bind to */
                 position = <0>;
                 bindings = < &ob_erm0_in >;
         };
@@ -139,7 +140,8 @@ Now, update your `shield.keymap` adding the behaviors.
                 compatible = "zmk,output-behavior-listener";
                 layers = < DEFAULT >;
                 sources = < OUTPUT_SOURCE_KEYCODE_STATE_CHANGE >;
-                /* optional, set keycode filter here */
+
+                /* set keycode filter here */
                 position = < 0x07 >;
                 bindings = < &ob_erm0_in >;
         };
@@ -149,9 +151,14 @@ Now, update your `shield.keymap` adding the behaviors.
                 compatible = "zmk,output-behavior-listener";
                 layers = < DEFAULT >;
                 sources = < OUTPUT_SOURCE_KEYCODE_STATE_CHANGE >;
-                /* optional, set keycode filter here */
+
+                /* set keycode filter here */
                 position = < 0x14 >;
                 bindings = < &ob_lra0 >;
+                
+                /* enable to catch all state change that include key press and release */
+                /* ensure to stop on-going LRA effect immediately on key released */
+                all-state;
         };
 
         keymap {

@@ -17,5 +17,7 @@ properties:
     type: int
   invert-state:
     type: boolean
+  all-state:
+    type: boolean
   bindings:
     type: phandle-array

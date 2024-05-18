@@ -9,4 +9,3 @@ compatible: "zmk,output-generic"
 properties:
   control-gpios:
     type: phandle-array
-    required: true

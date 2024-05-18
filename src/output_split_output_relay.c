@@ -49,7 +49,7 @@ static int output_split_output_relay_disable(const struct device *dev) {
     struct output_split_output_relay_data *data = dev->data;
     const struct output_split_output_relay_config *config = dev->config;
 
-    if (!data->busy) {
+    if (data->busy) {
         LOG_WRN("split output relay is busy");
         return -EBUSY;
     }

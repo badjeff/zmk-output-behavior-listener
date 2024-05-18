@@ -23,41 +23,55 @@ static int output_generic_enable(const struct device *dev, uint8_t force) {
     struct output_generic_data *data = dev->data;
     const struct output_generic_config *config = dev->config;
 
-    if (data->status) {
+    if (data->busy) {
         LOG_WRN("output device is busy");
         return -EBUSY;
     }
+    data->busy = true;
 
-    if (gpio_pin_set_dt(&config->control, 1)) {
-        LOG_WRN("Failed to set output control pin");
-        return -EIO;
+    int rc = 0;
+
+    if (config->has_control) {
+        if (gpio_pin_set_dt(&config->control, 1)) {
+            LOG_WRN("Failed to active output control pin");
+            rc = -EIO;
+            goto exit;
+        }
     }
-    data->status = true;
 
-    return 0;
+exit:
+    data->busy = false;
+    return rc;
 }
 
 static int output_generic_disable(const struct device *dev) {
     struct output_generic_data *data = dev->data;
     const struct output_generic_config *config = dev->config;
 
-    if (!data->status) {
+    if (data->busy) {
         LOG_WRN("output device is busy");
         return -EBUSY;
     }
+    data->busy = true;
 
-    if (gpio_pin_set_dt(&config->control, 0)) {
-        LOG_WRN("Failed to set output control pin");
-        LOG_WRN("Failed to clear output control pin");
-        return -EIO;
+    int rc = 0;
+
+    if (config->has_control) {
+        if (gpio_pin_set_dt(&config->control, 0)) {
+            LOG_WRN("Failed to inactive output control pin");
+            rc = -EIO;
+            goto exit;
+        }
     }
-    data->status = false;
-    return 0;
+
+exit:
+    data->busy = false;
+    return rc;
 }
 
 static int output_generic_get(const struct device *dev) {
     struct output_generic_data *data = dev->data;
-    return data->status;
+    return data->busy;
 }
 
 static int output_generic_init(const struct device *dev) {
@@ -65,6 +79,11 @@ static int output_generic_init(const struct device *dev) {
     const struct output_generic_config *config = dev->config;
 
     data->dev = dev;
+
+    if (!config->has_control) {
+        LOG_ERR("Missing configure output control pin");
+        return -EIO;
+    }
 
     if (gpio_pin_configure_dt(&config->control, GPIO_OUTPUT_INACTIVE)) {
         LOG_ERR("Failed to configure output control pin");
@@ -83,9 +102,15 @@ static const struct output_generic_api api = {
 #define ZMK_OUTPUT_INIT_PRIORITY 91
 
 #define OG_INST(n)                                                             \
-    static struct output_generic_data data_##n = { .status = false, };         \
+    static struct output_generic_data data_##n = { .busy = false, };           \
     static const struct output_generic_config config_##n = {                   \
-        .control = GPIO_DT_SPEC_INST_GET(n, control_gpios),                    \
+        .has_control = COND_CODE_1(                                            \
+                        DT_INST_NODE_HAS_PROP(n, control_gpios),               \
+                        (true), (false)),                                      \
+        .control = COND_CODE_1(                                                \
+                    DT_INST_NODE_HAS_PROP(n, control_gpios),                   \
+                    (GPIO_DT_SPEC_INST_GET(n, control_gpios)),                 \
+                    (NULL)),                                                   \
     };                                                                         \
     DEVICE_DT_INST_DEFINE(0, output_generic_init, DEVICE_DT_INST_GET(n),       \
                           &data_##n, &config_##n,                              \

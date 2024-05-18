@@ -12,7 +12,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 
-#include <zmk/output/output_generic.h>
+#include <zmk/output/output_generic.h> // struct output_generic_api
 
 #ifdef __cplusplus
 extern "C" {

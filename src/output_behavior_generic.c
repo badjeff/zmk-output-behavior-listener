@@ -24,6 +24,7 @@ struct output_behavior_geenric_config {
     const struct device *output_dev;
     uint32_t delay;
     uint32_t time_to_live_ms;
+    bool momentum;
     bool toggle;
     int16_t force;
 };
@@ -96,13 +97,23 @@ static void ob_generic_activate_cb(struct k_work *work) {
     }
 }
 
+static int ob_generic_binding_released(struct zmk_behavior_binding *binding,
+                                       struct zmk_behavior_binding_event event) {
+    const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
+    struct output_behavior_geenric_data *data = (struct output_behavior_geenric_data *)dev->data;
+    const struct output_behavior_geenric_config *cfg = dev->config;
+    if (cfg->momentum) {
+        k_work_schedule(&data->deactivate_work, K_MSEC(1));
+    }
+    return ZMK_BEHAVIOR_TRANSPARENT;
+}
+
 static int ob_generic_binding_pressed(struct zmk_behavior_binding *binding,
                                       struct zmk_behavior_binding_event event) {
     const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
     struct output_behavior_geenric_data *data = (struct output_behavior_geenric_data *)dev->data;
     const struct output_behavior_geenric_config *cfg = dev->config;
     if (cfg->toggle) {
-        LOG_WRN("toggle");
         struct k_work_delayable *work = data->active ? &data->deactivate_work : &data->activate_work;
         k_work_schedule(work, K_MSEC(cfg->delay));
     } else {
@@ -123,6 +134,7 @@ static int output_behavior_to_init(const struct device *dev) {
 
 static const struct behavior_driver_api output_behavior_geenric_driver_api = {
     .binding_pressed = ob_generic_binding_pressed,
+    .binding_released = ob_generic_binding_released,
 };
 
 #define ZMK_OUTPUT_INIT_PRIORITY 92
@@ -133,6 +145,7 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
         .output_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                                   \
         .delay = DT_INST_PROP(n, delay),                                                           \
         .time_to_live_ms = DT_INST_PROP(n, time_to_live_ms),                                       \
+        .momentum = DT_INST_PROP(n, momentum),                                                     \
         .toggle = DT_INST_PROP(n, toggle),                                                         \
         .force = DT_INST_PROP(n, force),                                                           \
     };                                                                                             \

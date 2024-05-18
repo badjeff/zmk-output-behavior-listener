@@ -17,12 +17,13 @@ extern "C" {
 #endif
 
 struct output_generic_config {
+    bool has_control;
     const struct gpio_dt_spec control;
 };
 
 struct output_generic_data {
     const struct device *dev;
-    bool status;
+    bool busy;
 };
 
 typedef int (*output_enable_t)(const struct device *dev, uint8_t force);

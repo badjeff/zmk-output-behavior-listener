@@ -91,7 +91,7 @@ static int output_haptic_feedback_disable(const struct device *dev) {
         return -EIO;
     }
 
-    if (!data->busy) {
+    if (data->busy) {
         LOG_WRN("output device is busy");
         return -EBUSY;
     }
