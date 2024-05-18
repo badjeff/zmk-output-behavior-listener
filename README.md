@@ -117,7 +117,7 @@ Now, update your `shield.keymap` adding the behaviors.
         };
 
         /* setup behavior for PWM device */
-        ob_pwn0: ob_generic_pwn0 {
+        ob_pwm0: ob_generic_pwn0 {
                 compatible = "zmk,output-behavior-generic"; #binding-cells = <0>;
                 device = <&pwm_led0>;
                 
@@ -202,7 +202,7 @@ Now, update your `shield.keymap` adding the behaviors.
 
                 /* set keycode filter here */
                 position = < 0x13 >;
-                bindings = < &ob_pwn0 >;
+                bindings = < &ob_pwm0 >;
                 
                 /* enable to catch all state change that include key press and release */
                 /* ensure to stop on-going LRA effect immediately on key released */
