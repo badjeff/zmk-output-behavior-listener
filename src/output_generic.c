@@ -19,7 +19,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/output/output_generic.h>
 
-static int output_generic_enable(const struct device *dev, uint8_t force) {
+static int output_generic_set(const struct device *dev, uint8_t value) {
     struct output_generic_data *data = dev->data;
     const struct output_generic_config *config = dev->config;
 
@@ -32,33 +32,8 @@ static int output_generic_enable(const struct device *dev, uint8_t force) {
     int rc = 0;
 
     if (config->has_control) {
-        if (gpio_pin_set_dt(&config->control, 1)) {
-            LOG_WRN("Failed to active output control pin");
-            rc = -EIO;
-            goto exit;
-        }
-    }
-
-exit:
-    data->busy = false;
-    return rc;
-}
-
-static int output_generic_disable(const struct device *dev) {
-    struct output_generic_data *data = dev->data;
-    const struct output_generic_config *config = dev->config;
-
-    if (data->busy) {
-        LOG_WRN("output device is busy");
-        return -EBUSY;
-    }
-    data->busy = true;
-
-    int rc = 0;
-
-    if (config->has_control) {
-        if (gpio_pin_set_dt(&config->control, 0)) {
-            LOG_WRN("Failed to inactive output control pin");
+        if (gpio_pin_set_dt(&config->control, value ? 1 : 0)) {
+            LOG_WRN("Failed to set output control pin");
             rc = -EIO;
             goto exit;
         }
@@ -71,7 +46,7 @@ exit:
 
 static int output_generic_get(const struct device *dev) {
     struct output_generic_data *data = dev->data;
-    return data->busy;
+    return !data->busy;
 }
 
 static int output_generic_init(const struct device *dev) {
@@ -94,9 +69,8 @@ static int output_generic_init(const struct device *dev) {
 }
 
 static const struct output_generic_api api = {
-    .enable = output_generic_enable,
-    .disable = output_generic_disable,
-    .get = output_generic_get,
+    .set_value = output_generic_set,
+    .get_ready = output_generic_get,
 };
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91

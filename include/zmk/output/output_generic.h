@@ -12,6 +12,8 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 
+#include <zmk/output/output_generic_api.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,16 +26,6 @@ struct output_generic_config {
 struct output_generic_data {
     const struct device *dev;
     bool busy;
-};
-
-typedef int (*output_enable_t)(const struct device *dev, uint8_t force);
-typedef int (*output_disable_t)(const struct device *dev);
-typedef int (*output_get_t)(const struct device *dev);
-
-struct output_generic_api {
-    output_enable_t enable;
-    output_disable_t disable;
-    output_get_t get;
 };
 
 #ifdef __cplusplus

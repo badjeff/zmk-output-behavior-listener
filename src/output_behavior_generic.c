@@ -38,7 +38,7 @@ struct output_behavior_geenric_data {
     const struct device *dev;
 };
 
-static void ob_geenric_set_output_enable(struct output_behavior_geenric_data *data) {
+static void ob_geenric_set_output_value(struct output_behavior_geenric_data *data) {
     const struct output_behavior_geenric_config *cfg = data->dev->config;
 
     const struct device *output_dev = cfg->output_dev;
@@ -48,17 +48,16 @@ static void ob_geenric_set_output_enable(struct output_behavior_geenric_data *da
     }
 
     const struct output_generic_api *api = (const struct output_generic_api *)output_dev->api;
-    if (api->enable == NULL) {
+    if (api->set_value == NULL) {
         LOG_WRN("No enable() api assigned on device %s", output_dev->name);
         return;
     }
 
-    if (data->active) {
-        api->enable(output_dev, data->is_momentum ? cfg->momentum_force : cfg->force);
-        data->is_momentum = false;
-    } else {
-        api->disable(output_dev);
-    }
+    uint32_t value = data->active
+        ? data->is_momentum ? cfg->momentum_force : cfg->force
+        : 0;
+    api->set_value(output_dev, value);
+    data->is_momentum = false;
 }
 
 static void ob_generic_deactivate_cb(struct k_work *work) {
@@ -72,7 +71,7 @@ static void ob_generic_deactivate_cb(struct k_work *work) {
     }
     LOG_DBG("deactivate");
     data->active = false;
-    ob_geenric_set_output_enable(data);
+    ob_geenric_set_output_value(data);
 }
 
 static void ob_generic_activate_cb(struct k_work *work) {
@@ -87,7 +86,7 @@ static void ob_generic_activate_cb(struct k_work *work) {
     if (!data->active) {
         LOG_DBG("actvate");
         data->active = true;
-        ob_geenric_set_output_enable(data);
+        ob_geenric_set_output_value(data);
     }
     if (cfg->toggle) {
         return;

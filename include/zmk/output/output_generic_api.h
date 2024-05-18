@@ -10,20 +10,17 @@
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/gpio.h>
-
-#include <zmk/output/output_generic_api.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct output_split_output_relay_config {
-};
+typedef int (*output_set_value_t)(const struct device *dev, uint8_t value);
+typedef int (*output_get_ready_t)(const struct device *dev);
 
-struct output_split_output_relay_data {
-    const struct device *dev;
-    bool busy;
+struct output_generic_api {
+    output_set_value_t set_value;
+    output_get_ready_t get_ready;
 };
 
 #ifdef __cplusplus

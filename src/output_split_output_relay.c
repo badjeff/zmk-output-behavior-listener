@@ -23,7 +23,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/output/output_split_output_relay.h>
 
-static int output_split_output_relay_enable(const struct device *dev, uint8_t force) {
+static int output_split_output_relay_set_value(const struct device *dev, uint8_t value) {
     struct output_split_output_relay_data *data = dev->data;
     const struct output_split_output_relay_config *config = dev->config;
 
@@ -36,7 +36,7 @@ static int output_split_output_relay_enable(const struct device *dev, uint8_t fo
     int rc = 0;
 
 #if IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY)
-    struct zmk_split_bt_output_relay_event ev = { .state = true, .force = force };
+    struct zmk_split_bt_output_relay_event ev = { .value = value };
     zmk_split_bt_invoke_output(dev, ev);
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY) */
 
@@ -45,29 +45,7 @@ exit:
     return rc;
 }
 
-static int output_split_output_relay_disable(const struct device *dev) {
-    struct output_split_output_relay_data *data = dev->data;
-    const struct output_split_output_relay_config *config = dev->config;
-
-    if (data->busy) {
-        LOG_WRN("split output relay is busy");
-        return -EBUSY;
-    }
-    data->busy = true;
-    
-    int rc = 0;
-
-#if IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY)
-    struct zmk_split_bt_output_relay_event ev = { .state = false, .force = 0 };
-    zmk_split_bt_invoke_output(dev, ev);
-#endif /* IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY) */
-
-exit:
-    data->busy = false;
-    return rc;
-}
-
-static int output_split_output_relay_get(const struct device *dev) {
+static int output_split_output_relay_get_ready(const struct device *dev) {
     struct output_split_output_relay_data *data = dev->data;
     return !data->busy;
 }
@@ -80,9 +58,8 @@ static int output_split_output_relay_init(const struct device *dev) {
 }
 
 static const struct output_generic_api api = {
-    .enable = output_split_output_relay_enable,
-    .disable = output_split_output_relay_disable,
-    .get = output_split_output_relay_get,
+    .set_value = output_split_output_relay_set_value,
+    .get_ready = output_split_output_relay_get_ready,
 };
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91
