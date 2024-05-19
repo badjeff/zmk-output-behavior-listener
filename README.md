@@ -1,10 +1,12 @@
-# Output Behavior Listener
+# ZMK Output Behavior Listener
 
 This module add behaviors to output device for ZMK.
 
 ## What it does
 
-It allow config a feedback of state change event by binding behaviors to feedback devices, such as, eccentric rotating mass (ERM) motors, Linear Resonant Actuator (LRA) vibration motors, or LED indicators. It is made for simulating various sensations by vibrating in a designed sequence.
+It allows to config a feedback of state change event by binding behaviors to feedback devices, such as, eccentric rotating mass (ERM) motors, Linear Resonant Actuator (LRA) vibration motors, LED indicators, serve motors, etc. It is made for simulating various feedback effect pattern in a designed sequence on devices simultaneously.
+
+There is an extension module [zmk-split-peripheral-output-relay](https://github.com/badjeff/zmk-split-peripheral-output-relay) that proxies output to split peripherals  via bluetooth.
 
 To drive LRA, it is recommended to drive it with [DRV2605L Haptic Motor Controller](https://www.adafruit.com/product/2305) and [zmk-drv2605-driver](https://github.com/badjeff/zmk-drv2605-driver).
 
