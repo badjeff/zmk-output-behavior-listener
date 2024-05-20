@@ -151,7 +151,7 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
                 const struct zmk_sensor_config *sensor_config = 
                     (const struct zmk_sensor_config *)cfg;
                 const struct zmk_sensor_channel_data val[] = {
-                    { .value = { .val1 = (struct input_event *)evt },
+                    { .value = { .val1 = (struct zmk_output_event *)evt },
                     .channel = SENSOR_CHAN_ALL, },
                 };
                 int ret = behavior_sensor_keymap_binding_accept_data(
