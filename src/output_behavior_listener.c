@@ -124,7 +124,7 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
         }
 
         const struct behavior_driver_api *api = (const struct behavior_driver_api *)behavior->api;
-        int ret = 0;
+        int ret = ZMK_BEHAVIOR_TRANSPARENT;
 
         if (api->binding_pressed || api->binding_released) {
 
