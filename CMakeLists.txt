@@ -11,9 +11,10 @@ endif()
 # if (CONFIG_ZMK_SPLIT AND (NOT CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
 # endif()
 
-zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER src/output_generic.c)
-zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER src/output_haptic_feedback.c)
-zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER src/output_pwm.c)
+zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_GENERIC src/output_generic.c)
+zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_HAPTIC_FEEDBACK src/output_haptic_feedback.c)
+zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_PWM src/output_pwm.c)
+
 zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER src/output_event.c)
 zephyr_include_directories(include)
 
