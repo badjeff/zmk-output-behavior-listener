@@ -100,7 +100,7 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
     if (evt->source == OUTPUT_SOURCE_LAYER_STATE_CHANGE
     ||  evt->source == OUTPUT_SOURCE_POSITION_STATE_CHANGE
     ||  evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
-    // ||  evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE
+    ||  evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE
     ) {
         if (evt->state != cfg_state && !cfg->all_state) {
             return false;
@@ -197,11 +197,6 @@ static int output_event_listener(const zmk_event_t *ev) {
     struct zmk_output_event *out_ev;
     if ((out_ev = as_zmk_output_event(ev)) != NULL) {
         int ret = zmk_output_event_triggered(out_ev);
-
-        #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-        // zmk_split_bt_trigger_output_event(e);
-        #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
-
         return ret;
     }
 
@@ -219,7 +214,7 @@ static int output_event_listener(const zmk_event_t *ev) {
         e.source = OUTPUT_SOURCE_LAYER_STATE_CHANGE;
         e.position = lay_ev->layer;
         e.state = lay_ev->state;
-        raise_zmk_output_event(e);
+        zmk_output_event_triggered(&e); // raise_zmk_output_event(e);
     }
 
     const struct zmk_position_state_changed *pos_ev;
@@ -227,7 +222,7 @@ static int output_event_listener(const zmk_event_t *ev) {
         e.source = OUTPUT_SOURCE_POSITION_STATE_CHANGE;
         e.position = pos_ev->position;
         e.state = pos_ev->state;
-        raise_zmk_output_event(e);
+        zmk_output_event_triggered(&e); // raise_zmk_output_event(e);
     }
 
     const struct zmk_keycode_state_changed *kc_ev;
@@ -235,7 +230,7 @@ static int output_event_listener(const zmk_event_t *ev) {
         e.source = OUTPUT_SOURCE_KEYCODE_STATE_CHANGE;
         e.position = kc_ev->keycode;
         e.state = kc_ev->state;
-        raise_zmk_output_event(e);
+        zmk_output_event_triggered(&e); // raise_zmk_output_event(e);
     }
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 
@@ -251,39 +246,58 @@ ZMK_SUBSCRIPTION(output_event_listener, zmk_layer_state_changed);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_position_state_changed);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_keycode_state_changed);
 
-// #if IS_ENABLED(CONFIG_INPUT)
+#if IS_ENABLED(CONFIG_INPUT)
 
-// void ouput_input_handler(struct input_event *evt) {
-//     switch (evt->type) {
-//     case INPUT_EV_KEY:
-//         switch (evt->code) {
-//         case INPUT_BTN_0:
-//         case INPUT_BTN_1:
-//         case INPUT_BTN_2:
-//         case INPUT_BTN_3:
-//         case INPUT_BTN_4:
-//             if (evt->value > 0) {
-//                 struct zmk_output_event e = (struct zmk_output_event){
-//                     .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-//                     .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
-//                     .timestamp = k_uptime_get()
-//                 };
-//                 e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
-//                 e.position = 1 + evt->code - INPUT_BTN_0;
-//                 e.state = true;
-//                 // raise_zmk_output_event(e);
-//             }
-//             break;
-//         default:
-//             break;
-//         }
-//         break;
-//     }
-// }
+void ouput_input_handler(struct input_event *evt) {
+    switch (evt->type) {
+    case INPUT_EV_KEY:
+        switch (evt->code) {
+        case INPUT_BTN_0:
+        case INPUT_BTN_1:
+        case INPUT_BTN_2:
+        case INPUT_BTN_3:
+        case INPUT_BTN_4:
+            struct zmk_output_event e = (struct zmk_output_event){
+                .layer = zmk_keymap_highest_layer_active(),
+                .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+                .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                .timestamp = k_uptime_get()
+            };
+            e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
+            e.position = 1 + evt->code - INPUT_BTN_0;
+            e.state = evt->value > 0;
+            // LOG_WRN("mouse button: %d state: %d", e.position, e.state ? 1 : 0);
+            zmk_output_event_triggered(&e);
+            break;
+        default:
+            break;
+        }
+        break;
+    case INPUT_EV_REL:
+        switch (evt->code) {
+        case INPUT_REL_WHEEL:
+            struct zmk_output_event e = (struct zmk_output_event){
+                .layer = zmk_keymap_highest_layer_active(),
+                .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+                .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                .timestamp = k_uptime_get()
+            };
+            e.source = OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE;
+            e.position = evt->value;
+            e.state = evt->value != 0;
+            // LOG_WRN("mouse wheel: %d state: %d", e.position, e.state ? 1 : 0);
+            zmk_output_event_triggered(&e);
+            break;
+        default:
+            break;
+        }
+        break;
+    }
+}
 
-// INPUT_CALLBACK_DEFINE(NULL, ouput_input_handler);
+INPUT_CALLBACK_DEFINE(NULL, ouput_input_handler);
 
-// #endif /* IS_ENABLED(CONFIG_INPUT) */
+#endif /* IS_ENABLED(CONFIG_INPUT) */
 
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 

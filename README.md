@@ -67,7 +67,9 @@ Now, update your `shield.keymap` adding the behaviors.
 #define OUTPUT_SOURCE_LAYER_STATE_CHANGE        1
 #define OUTPUT_SOURCE_POSITION_STATE_CHANGE     2
 #define OUTPUT_SOURCE_KEYCODE_STATE_CHANGE      3
-#define OUTPUT_SOURCE_TRANSPORT                 4
+#define OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE 4
+#define OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE  5
+#define OUTPUT_SOURCE_TRANSPORT                 6
 
 / {
         /* setup listen to monitor layer_state_change and keycode_state_change */
@@ -209,6 +211,31 @@ Now, update your `shield.keymap` adding the behaviors.
                 /* enable to catch all state change that include key press and release */
                 /* ensure to stop on-going LRA effect immediately on key released */
                 all-state;
+        };
+
+        /* setup listener on press mouse button 1, and feedback via LRA */
+        led1_obl__press_mouse_btn_1 {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                sources = < OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE >;
+
+                /* trigger on mouse button 1 status change */
+                position = < 1 >;
+                bindings = < &ob_pwm0 >;
+
+                /* enable to catch all state change that include key press and release */
+                /* ensure to stop on-going LRA effect immediately on key released */
+                all-state;
+        };
+
+        /* setup listener on mouse wheel input, and feedback via ERM */
+        /* usually, no feedback from scrolling on touchpad or trackball, this config adds haptic feedback to emulate notchy bump from physical scroll wheel */
+        led1_obl__press_mouse_whl_1 {
+                compatible = "zmk,output-behavior-listener";
+                layers = < DEFAULT >;
+                /* trigger on mouse wheel status change */
+                sources = < OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE >;
+                bindings = < &ob_erm0_in >;
         };
 
         keymap {
