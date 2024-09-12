@@ -236,8 +236,8 @@ static int output_event_listener(const zmk_event_t *ev) {
     return 0;
 }
 
-static ZMK_LISTENER(output_event_listener, output_event_listener);
-static ZMK_SUBSCRIPTION(output_event_listener, zmk_output_event);
+ZMK_LISTENER(output_event_listener, output_event_listener);
+ZMK_SUBSCRIPTION(output_event_listener, zmk_output_event);
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
