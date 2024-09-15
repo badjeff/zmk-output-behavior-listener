@@ -13,6 +13,7 @@ endif()
 
 zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_GENERIC src/output_generic.c)
 zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_HAPTIC_FEEDBACK src/output_haptic_feedback.c)
+zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_MOTORIZED_FADER src/output_motorized_fader.c)
 zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_PWM src/output_pwm.c)
 
 zephyr_library_sources_ifdef(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER src/output_event.c)

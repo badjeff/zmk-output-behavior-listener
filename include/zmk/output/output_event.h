@@ -25,7 +25,7 @@ struct zmk_output_event {
     uint32_t position;
     bool state;
     uint8_t force;
-    uint8_t duration;
+    uint8_t value;
     uint64_t timestamp;
 };
 

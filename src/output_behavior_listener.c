@@ -204,7 +204,7 @@ static int output_event_listener(const zmk_event_t *ev) {
     struct zmk_output_event e = (struct zmk_output_event){
         .layer = zmk_keymap_highest_layer_active(),
         .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-        .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+        .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
         .timestamp = k_uptime_get()
     };
 
@@ -259,7 +259,7 @@ void ouput_input_handler(struct input_event *evt) {
             struct zmk_output_event e = (struct zmk_output_event){
                 .layer = zmk_keymap_highest_layer_active(),
                 .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-                .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
                 .timestamp = k_uptime_get()
             };
             e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
@@ -278,7 +278,7 @@ void ouput_input_handler(struct input_event *evt) {
             struct zmk_output_event e = (struct zmk_output_event){
                 .layer = zmk_keymap_highest_layer_active(),
                 .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-                .duration = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
                 .timestamp = k_uptime_get()
             };
             e.source = OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE;

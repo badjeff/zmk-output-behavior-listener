@@ -25,6 +25,11 @@ config ZMK_OUTPUT_HAPTIC_FEEDBACK
 		bool
 		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_HAPTIC_FEEDBACK))
 
+DT_COMPAT_ZMK_OUTPUT_MOTORIZED_FADER := zmk,output-motorized-fader
+config ZMK_OUTPUT_MOTORIZED_FADER
+		bool
+		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_MOTORIZED_FADER))
+
 DT_COMPAT_ZMK_OUTPUT_PWM := zmk,output-pwm
 config ZMK_OUTPUT_PWM
 		bool

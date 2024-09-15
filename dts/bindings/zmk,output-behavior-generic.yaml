@@ -28,3 +28,5 @@ properties:
   momentum-force:
     type: int
     default: 0
+  positional:
+    type: boolean

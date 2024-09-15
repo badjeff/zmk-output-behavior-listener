@@ -1,0 +1,40 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: |
+  Generic driver for controlling motorized fader
+
+compatible: "zmk,output-motorized-fader"
+
+properties:
+
+  sensor-device:
+    type: phandle
+    description: sensor device, which called via sensor_channel_get()
+
+  sensor-channel:
+    type: int
+    default: 0
+    description: sensor channel index of returned values from sensor_channel_get()
+
+  motor-driver-device:
+    type: phandle
+    description: h-bridge motor device, which called via sensor_attr_set()
+  motor-driver:
+    type: string
+    enum:
+      - tb6612fng
+    description: h-bridge driver to use
+  motor-channel:
+    type: int
+    default: 0
+
+  proportional:
+    type: int
+    default: 1
+  integral:
+    type: int
+    default: 1
+  derivative:
+    type: int
+    default: 1
