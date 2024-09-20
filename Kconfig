@@ -10,7 +10,7 @@ config ZMK_OUTPUT_BEHAVIOR_LISTENER
 		bool
 		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_LISTENER))
 
-DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_GENERIC := zmk,output-behavior-geenric
+DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_GENERIC := zmk,output-behavior-generic
 config ZMK_OUTPUT_BEHAVIOR_GENERIC
 		bool
 		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_OUTPUT_BEHAVIOR_GENERIC))
