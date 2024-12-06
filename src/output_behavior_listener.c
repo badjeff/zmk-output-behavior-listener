@@ -99,7 +99,7 @@ static void ob_behavior_listener_tap_cb(struct k_work *work) {
         return;
     }
 
-    const struct behavior_driver_api *api = (const stjruct behavior_driver_api *)behavior->api;
+    const struct behavior_driver_api *api = (const struct behavior_driver_api *)behavior->api;
     if (!api->binding_released) {
         LOG_WRN("Binding behavior does not has binding_released");
         return;
