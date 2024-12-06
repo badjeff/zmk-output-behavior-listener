@@ -161,6 +161,19 @@ Now, update your `shield.keymap` adding the behaviors.
                 bindings = < &ob_erm0_out >;
         };
 
+        /* setup listener on enter raise to Spotlight in macOS */
+        kp_spotlight_on_enter_cfg_layer {
+                compatible = "zmk,output-behavior-listener";
+                layers = < RAISE >;
+                sources = < OUTPUT_SOURCE_LAYER_STATE_CHANGE >;
+
+                /* to trigger press CMD-SPACE and release after 30ms */
+                /* NOTE: tap-ms only affecting 1st zmk behavior binding in list */
+                /* NOTE: use macro behavior if you need consequential triggers */
+                bindings = < &kp LG(SPACE) >;
+                tap-ms = <30>;
+        };
+
         /* setup listener on press key on position 0 */
         erm0_obl__press_position_0 {
                 compatible = "zmk,output-behavior-listener";

@@ -36,10 +36,19 @@ struct output_behavior_listener_config {
     uint32_t position;
     bool invert_state;
     bool all_state;
+    uint32_t tap_ms;
     uint8_t layers_count;
     uint8_t layers[ZMK_KEYMAP_LAYERS_LEN];
     uint8_t bindings_count;
     struct zmk_behavior_binding bindings[];
+};
+
+struct output_behavior_listener_data {
+    struct output_behavior_listener_config *cfg;
+    struct k_work_delayable tap_release_work;
+    uint8_t tap_release_layer;
+    uint8_t tap_release_binding_idx;
+    struct zmk_output_event *tap_release_output_event;
 };
 
 #define OBL_EXTRACT_BINDING(idx, drv_inst)                                                         \
@@ -52,6 +61,7 @@ struct output_behavior_listener_config {
     }
 
 #define OBL_INST(n)                                                                                \
+    static struct output_behavior_listener_data data_##n = {};                                     \
     static const struct output_behavior_listener_config config_##n = {                             \
         .sources_count = DT_INST_PROP_LEN(n, sources),                                             \
         .sources = DT_INST_PROP(n, sources),                                                       \
@@ -61,6 +71,7 @@ struct output_behavior_listener_config {
             (DT_INST_PROP(n, position)), (0)),                                                     \
         .invert_state = DT_INST_PROP(n, invert_state),                                             \
         .all_state = DT_INST_PROP(n, all_state),                                                   \
+        .tap_ms = DT_INST_PROP(n, tap_ms),                                                         \
         .layers_count = DT_INST_PROP_LEN(n, layers),                                               \
         .layers = DT_INST_PROP(n, layers),                                                         \
         .bindings_count = COND_CODE_1(                                                             \
@@ -74,7 +85,41 @@ struct output_behavior_listener_config {
 
 DT_INST_FOREACH_STATUS_OKAY(OBL_INST)
 
+static void ob_behavior_listener_tap_cb(struct k_work *work) {
+    struct k_work_delayable *work_delayable = (struct k_work_delayable *)work;
+    struct output_behavior_listener_data *data = CONTAINER_OF(work_delayable, 
+                                                              struct output_behavior_listener_data,
+                                                              tap_release_work);
+    LOG_DBG("");
+    const struct output_behavior_listener_config *cfg = data->cfg;
+    struct zmk_behavior_binding binding = cfg->bindings[data->tap_release_binding_idx];
+    const struct device *behavior = zmk_behavior_get_binding(binding.behavior_dev);
+    if (!behavior) {
+        LOG_WRN("No output behavior assigned");
+        return;
+    }
+
+    const struct behavior_driver_api *api = (const stjruct behavior_driver_api *)behavior->api;
+    if (!api->binding_released) {
+        LOG_WRN("Binding behavior does not has binding_released");
+        return;
+    }
+
+    uint8_t layer = data->tap_release_layer;
+    struct zmk_output_event *evt = data->tap_release_output_event;
+    struct zmk_behavior_binding_event event = {
+        .layer = layer, .timestamp = k_uptime_get(),
+        .position = (struct zmk_output_event *)evt, // util uint32_t to pass event ptr :)
+    };
+    LOG_DBG("call binding_released");
+    api->binding_released(&binding, event);
+
+    // clear occupying output event
+    data->tap_release_output_event = NULL;
+}
+
 static bool intercept_with_output_config(const struct output_behavior_listener_config *cfg,
+                                         struct output_behavior_listener_data *data,
                                          struct zmk_output_event *evt) {
 
     uint8_t source = evt->source;
@@ -134,6 +179,20 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
 
             if (api->binding_pressed && evt->state) {
                 ret = api->binding_pressed(&binding, event);
+                if (api->binding_released && cfg->tap_ms >= 0) {
+                    if (!data->cfg) {
+                        data->cfg = cfg;
+                        k_work_init_delayable(&data->tap_release_work, ob_behavior_listener_tap_cb);
+                    }
+                    // bypassing tap-ms while some tap-release is ongoing to be happened
+                    if (!data->tap_release_output_event) {
+                        data->tap_release_output_event = evt;
+                        // LOG_DBG("sche tap-ms work %d", cfg->tap_ms);
+                        data->tap_release_layer = layer;
+                        data->tap_release_binding_idx = b;
+                        k_work_schedule(&data->tap_release_work, K_MSEC(cfg->tap_ms));
+                    }
+                }
             }
             else if (api->binding_released && !evt->state) {
                 ret = api->binding_released(&binding, event);
@@ -182,9 +241,9 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
 static int zmk_output_event_triggered(struct zmk_output_event *ev) {
     bool intercepted = false;
 
-    #define EXEC__OUTPUT_BEHAVIOR_LISTENER(n)                                 \
-        if (!intercepted) {                                                   \
-            intercepted = intercept_with_output_config(&config_##n, ev);      \
+    #define EXEC__OUTPUT_BEHAVIOR_LISTENER(n)                                            \
+        if (!intercepted) {                                                              \
+            intercepted = intercept_with_output_config(&config_##n, &data_##n, ev);      \
         }
 
     DT_INST_FOREACH_STATUS_OKAY(EXEC__OUTPUT_BEHAVIOR_LISTENER)
