@@ -141,6 +141,8 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
     }
 
     bool cfg_state = cfg->invert_state ? false : true;
+    bool state_is_matched_cfg = evt->state == cfg_state;
+
     if (evt->source == OUTPUT_SOURCE_LAYER_STATE_CHANGE
     ||  evt->source == OUTPUT_SOURCE_POSITION_STATE_CHANGE
     ||  evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
@@ -177,7 +179,7 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
                 .position = (struct zmk_output_event *)evt, // util uint32_t to pass event ptr :)
             };
 
-            if (api->binding_pressed && evt->state) {
+            if (api->binding_pressed && state_is_matched_cfg) {
                 ret = api->binding_pressed(&binding, event);
                 if (api->binding_released && cfg->tap_ms >= 0) {
                     if (!data->cfg) {
