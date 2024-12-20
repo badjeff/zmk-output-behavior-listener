@@ -17,6 +17,10 @@
 #include <zmk/drivers/tb6612fng.h>
 #endif
 
+#if IS_ENABLED(CONFIG_DRV883X)
+#include <zmk/drivers/drv883x.h>
+#endif
+
 // #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
 #include <zephyr/logging/log.h>
@@ -217,6 +221,144 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
 
     }
 #endif /* IS_ENABLED(CONFIG_TB6612FNG) */
+
+#if IS_ENABLED(CONFIG_DRV883X)
+    if (config->motor_drv == OUTPUT_MOTORIZED_FADER_DRIVER_DRV883X) {
+    	struct sensor_value val = { .val1 = 0, .val2 = 0 };
+
+        const struct device *tb6612fng_dev = motor_dev;
+
+        // int16_t p = config->proportional;
+        // int16_t i = config->integral;
+        // int16_t d = config->derivative;
+        uint8_t vec = 96;
+
+        uint32_t chan = config->motor_channel;
+        int16_t vel = 0;
+
+        if (value > sen_val) {
+            // vel = -(value - sen_val);
+            vel = -vec;
+        }
+        else if (value < sen_val) {
+            // vel = (sen_val - value);
+            vel = vec;
+        }
+        // LOG_WRN("fader vel: %d", vel);
+
+        if (vel) {
+            // enable enable pin, disable iif vel == 0
+            val.val1 = (!vel) ? 0 : 1;
+            val.val2 = 0;
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+            if (err) {
+                LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
+            }
+
+            // set velocity and inversr flag
+            val.val1 = abs(vel);
+            val.val2 = vel < 0;
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                (enum sensor_attribute) DRV883X_ATTR_VELOCITY, &val);
+            if (err) {
+                LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_VELOCITY");
+            }
+
+            // call sync to latch velocity setting to driver
+            val.val1 = chan;
+            val.val2 = 0;
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                (enum sensor_attribute) DRV883X_ATTR_SYNC, &val);
+            if (err) {
+                LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_SYNC");
+            }
+        }
+    
+
+        while (true) {
+            k_msleep(3);
+
+            // err = sensor_sample_fetch(sensor_dev);
+            // if (err) {
+            //     LOG_WRN("Failed to fetch sample from device %d", err);
+            //     rc = -EIO;
+            //     goto exit;
+            // }
+
+            err = sensor_channel_get(sensor_dev, SENSOR_CHAN_ALL, &val);
+            if (err) {
+                LOG_WRN("Failed to get channel from device %d", err);
+                // rc = -EIO;
+                // goto exit;
+            }
+            sen_val = val.val1;
+            if (config->sensor_channel == 1) {
+                sen_val = val.val2;
+            }
+            // LOG_WRN("fader sen_val: %d", sen_val);
+
+            if (sen_val == value) {
+                break;
+            }
+
+            int16_t vel2 = 0;
+            if (value > sen_val) {
+                // vel2 = -(value - sen_val);
+                vel2 = -abs(vel);
+            }
+            else if (value < sen_val) {
+                // vel2 = (sen_val - value);
+                vel2 = abs(vel);
+            }
+            // LOG_WRN("fader vel: %d", vel);
+
+            if (vel2 && vel2 != vel) {
+                vel = vel2 / 2;
+
+                // enable enable pin, disable iif vel == 0
+                val.val1 = (!vel) ? 0 : 1;
+                val.val2 = 0;
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                    (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+                if (err) {
+                    LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
+                }
+
+                // set velocity and inversr flag
+                val.val1 = abs(vel);
+                val.val2 = vel < 0;
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                    (enum sensor_attribute) DRV883X_ATTR_VELOCITY, &val);
+                if (err) {
+                    LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_VELOCITY");
+                }
+
+                // call sync to latch velocity setting to driver
+                val.val1 = chan;
+                val.val2 = 0;
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                                    (enum sensor_attribute) DRV883X_ATTR_SYNC, &val);
+                if (err) {
+                    LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_SYNC");
+                }
+            }
+
+        }
+
+        // disable
+        val.val1 = 0;
+        val.val2 = 0;
+        err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
+                            (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+        if (err) {
+            LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
+            rc = -EIO;
+            goto exit;
+        }
+
+    }
+#endif /* IS_ENABLED(CONFIG_DRV883X) */
 
     val.val1 = 1;
     err = sensor_attr_set(sensor_dev, SENSOR_CHAN_ALL, 

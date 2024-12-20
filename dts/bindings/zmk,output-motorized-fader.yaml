@@ -24,6 +24,7 @@ properties:
     type: string
     enum:
       - tb6612fng
+      - drv883x
     description: h-bridge driver to use
   motor-channel:
     type: int

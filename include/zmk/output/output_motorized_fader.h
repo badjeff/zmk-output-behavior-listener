@@ -20,6 +20,7 @@ extern "C" {
 
 enum output_motorized_fader_driver {
     OUTPUT_MOTORIZED_FADER_DRIVER_TB6612FNG,
+    OUTPUT_MOTORIZED_FADER_DRIVER_DRV883X,
 };
 
 struct output_motorized_fader_config {
