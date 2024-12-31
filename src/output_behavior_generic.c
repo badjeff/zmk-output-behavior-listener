@@ -58,9 +58,7 @@ static void ob_geenric_set_output_value(struct output_behavior_geenric_data *dat
         return;
     }
 
-    uint32_t value = data->active
-        ? data->is_momentum ? data->momentum_force : data->force
-        : 0;
+    uint32_t value = data->active ? data->is_momentum ? data->momentum_force : data->force : 0;
 
     // LOG_DBG("set_value: %d", value);
     api->set_value(output_dev, value);
@@ -69,9 +67,8 @@ static void ob_geenric_set_output_value(struct output_behavior_geenric_data *dat
 
 static void ob_generic_deactivate_cb(struct k_work *work) {
     struct k_work_delayable *work_delayable = (struct k_work_delayable *)work;
-    struct output_behavior_geenric_data *data = CONTAINER_OF(work_delayable, 
-                                                             struct output_behavior_geenric_data,
-                                                             deactivate_work);
+    struct output_behavior_geenric_data *data =
+        CONTAINER_OF(work_delayable, struct output_behavior_geenric_data, deactivate_work);
     const struct output_behavior_geenric_config *cfg = data->dev->config;
 
     if (!data->active && cfg->time_to_live_ms) {
@@ -85,21 +82,20 @@ static void ob_generic_deactivate_cb(struct k_work *work) {
 
 static void ob_generic_activate_cb(struct k_work *work) {
     struct k_work_delayable *work_delayable = (struct k_work_delayable *)work;
-    struct output_behavior_geenric_data *data = CONTAINER_OF(work_delayable, 
-                                                             struct output_behavior_geenric_data,
-                                                             activate_work);
+    struct output_behavior_geenric_data *data =
+        CONTAINER_OF(work_delayable, struct output_behavior_geenric_data, activate_work);
     const struct output_behavior_geenric_config *cfg = data->dev->config;
 
     if (data->active && cfg->time_to_live_ms) {
         return;
     }
-    
+
     if (!data->active) {
         LOG_DBG("actvate");
         data->active = true;
         ob_geenric_set_output_value(data);
     }
-    
+
     if (cfg->toggle) {
         return;
     }
@@ -141,7 +137,8 @@ static int ob_generic_binding_pressed(struct zmk_behavior_binding *binding,
     }
 
     if (cfg->toggle) {
-        struct k_work_delayable *work = data->active ? &data->deactivate_work : &data->activate_work;
+        struct k_work_delayable *work =
+            data->active ? &data->deactivate_work : &data->activate_work;
         k_work_schedule(work, K_MSEC(cfg->delay));
     } else {
         k_work_schedule(&data->activate_work, K_MSEC(cfg->delay));
@@ -170,23 +167,21 @@ static const struct behavior_driver_api output_behavior_geenric_driver_api = {
 
 #define ZMK_OUTPUT_INIT_PRIORITY 92
 
-#define KP_INST(n)                                                                         \
-    static struct output_behavior_geenric_data output_behavior_geenric_data_##n = {};      \
-    static struct output_behavior_geenric_config output_behavior_geenric_config_##n = {    \
-        .output_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                           \
-        .delay = DT_INST_PROP(n, delay),                                                   \
-        .time_to_live_ms = DT_INST_PROP(n, time_to_live_ms),                               \
-        .toggle = DT_INST_PROP(n, toggle),                                                 \
-        .force = DT_INST_PROP(n, force),                                                   \
-        .momentum = DT_INST_PROP(n, momentum),                                             \
-        .momentum_force = DT_INST_PROP(n, momentum_force),                                 \
-        .positional = DT_INST_PROP(n, positional),                                         \
-    };                                                                                     \
-    BEHAVIOR_DT_INST_DEFINE(n, output_behavior_to_init, NULL,                              \
-                            &output_behavior_geenric_data_##n,                             \
-                            &output_behavior_geenric_config_##n,                           \
-                            POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY,                         \
-                            &output_behavior_geenric_driver_api);
+#define KP_INST(n)                                                                                 \
+    static struct output_behavior_geenric_data output_behavior_geenric_data_##n = {};              \
+    static struct output_behavior_geenric_config output_behavior_geenric_config_##n = {            \
+        .output_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                                   \
+        .delay = DT_INST_PROP(n, delay),                                                           \
+        .time_to_live_ms = DT_INST_PROP(n, time_to_live_ms),                                       \
+        .toggle = DT_INST_PROP(n, toggle),                                                         \
+        .force = DT_INST_PROP(n, force),                                                           \
+        .momentum = DT_INST_PROP(n, momentum),                                                     \
+        .momentum_force = DT_INST_PROP(n, momentum_force),                                         \
+        .positional = DT_INST_PROP(n, positional),                                                 \
+    };                                                                                             \
+    BEHAVIOR_DT_INST_DEFINE(n, output_behavior_to_init, NULL, &output_behavior_geenric_data_##n,   \
+                            &output_behavior_geenric_config_##n, POST_KERNEL,                      \
+                            ZMK_OUTPUT_INIT_PRIORITY, &output_behavior_geenric_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(KP_INST)
 

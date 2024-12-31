@@ -75,19 +75,16 @@ static const struct output_generic_api api = {
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91
 
-#define OG_INST(n)                                                             \
-    static struct output_generic_data data_##n = { .busy = false, };           \
-    static const struct output_generic_config config_##n = {                   \
-        .has_control = COND_CODE_1(                                            \
-                        DT_INST_NODE_HAS_PROP(n, control_gpios),               \
-                        (true), (false)),                                      \
-        .control = COND_CODE_1(                                                \
-                    DT_INST_NODE_HAS_PROP(n, control_gpios),                   \
-                    (GPIO_DT_SPEC_INST_GET(n, control_gpios)),                 \
-                    (NULL)),                                                   \
-    };                                                                         \
-    DEVICE_DT_INST_DEFINE(0, output_generic_init, DEVICE_DT_INST_GET(n),       \
-                          &data_##n, &config_##n,                              \
+#define OG_INST(n)                                                                                 \
+    static struct output_generic_data data_##n = {                                                 \
+        .busy = false,                                                                             \
+    };                                                                                             \
+    static const struct output_generic_config config_##n = {                                       \
+        .has_control = COND_CODE_1(DT_INST_NODE_HAS_PROP(n, control_gpios), (true), (false)),      \
+        .control = COND_CODE_1(DT_INST_NODE_HAS_PROP(n, control_gpios),                            \
+                               (GPIO_DT_SPEC_INST_GET(n, control_gpios)), (NULL)),                 \
+    };                                                                                             \
+    DEVICE_DT_INST_DEFINE(0, output_generic_init, DEVICE_DT_INST_GET(n), &data_##n, &config_##n,   \
                           POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
 
 DT_INST_FOREACH_STATUS_OKAY(OG_INST)
