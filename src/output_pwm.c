@@ -35,7 +35,7 @@ static int output_pwm_set_value(const struct device *dev, uint8_t value) {
         return -EBUSY;
     }
     data->busy = true;
-    
+
     int rc = 0;
 
     uint32_t period = pwm.period;
@@ -43,8 +43,7 @@ static int output_pwm_set_value(const struct device *dev, uint8_t value) {
         uint32_t pulse = period / 256.0 * value;
         LOG_DBG("enable: force %d period %d pulse %d", value, period, pulse);
         pwm_set_dt(&pwm, period, pulse);
-    }
-    else {
+    } else {
         pwm_set_dt(&pwm, period, 0);
     }
 
@@ -72,13 +71,14 @@ static const struct output_generic_api api = {
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91
 
-#define OPWM_INST(n)                                                             \
-    static struct output_pwm_data data_##n = { .busy = false, };                 \
-    static const struct output_pwm_config config_##n = {                         \
-        .pwm = PWM_DT_SPEC_GET(DT_DRV_INST(n)),                                  \
-    };                                                                           \
-    DEVICE_DT_INST_DEFINE(0, output_pwm_init, DEVICE_DT_INST_GET(n),             \
-                          &data_##n, &config_##n,                                \
+#define OPWM_INST(n)                                                                               \
+    static struct output_pwm_data data_##n = {                                                     \
+        .busy = false,                                                                             \
+    };                                                                                             \
+    static const struct output_pwm_config config_##n = {                                           \
+        .pwm = PWM_DT_SPEC_GET(DT_DRV_INST(n)),                                                    \
+    };                                                                                             \
+    DEVICE_DT_INST_DEFINE(0, output_pwm_init, DEVICE_DT_INST_GET(n), &data_##n, &config_##n,       \
                           POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
 
 DT_INST_FOREACH_STATUS_OKAY(OPWM_INST)

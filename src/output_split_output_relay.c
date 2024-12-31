@@ -36,7 +36,7 @@ static int output_split_output_relay_set_value(const struct device *dev, uint8_t
     int rc = 0;
 
 #if IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY)
-    struct zmk_split_bt_output_relay_event ev = { .value = value };
+    struct zmk_split_bt_output_relay_event ev = {.value = value};
     zmk_split_bt_invoke_output(dev, ev);
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY) */
 
@@ -64,13 +64,13 @@ static const struct output_generic_api api = {
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91
 
-#define OSOR_INST(n)                                                                        \
-    static struct output_split_output_relay_data data_##n = { .busy = false, };             \
-    static const struct output_split_output_relay_config config_##n = {                     \
-    };                                                                                      \
-    DEVICE_DT_INST_DEFINE(0, output_split_output_relay_init, DEVICE_DT_INST_GET(n),         \
-                          &data_##n, &config_##n,                                           \
-                          POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
+#define OSOR_INST(n)                                                                               \
+    static struct output_split_output_relay_data data_##n = {                                      \
+        .busy = false,                                                                             \
+    };                                                                                             \
+    static const struct output_split_output_relay_config config_##n = {};                          \
+    DEVICE_DT_INST_DEFINE(0, output_split_output_relay_init, DEVICE_DT_INST_GET(n), &data_##n,     \
+                          &config_##n, POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
 
 DT_INST_FOREACH_STATUS_OKAY(OSOR_INST)
 

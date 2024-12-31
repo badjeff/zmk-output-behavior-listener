@@ -62,7 +62,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
     //     goto exit;
     // }
 
-    struct sensor_value val = { .val1 = 0, .val2 = 0 };
+    struct sensor_value val = {.val1 = 0, .val2 = 0};
     err = sensor_channel_get(sensor_dev, SENSOR_CHAN_ALL, &val);
     if (err) {
         LOG_WRN("Failed to get channel from device %d", err);
@@ -76,8 +76,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
     LOG_WRN("fader sen_val: %d", sen_val);
 
     val.val1 = 0;
-    err = sensor_attr_set(sensor_dev, SENSOR_CHAN_ALL, 
-                        (enum sensor_attribute) ANALOG_INPUT_ATTR_ACTIVE, &val);
+    err = sensor_attr_set(sensor_dev, SENSOR_CHAN_ALL,
+                          (enum sensor_attribute)ANALOG_INPUT_ATTR_ACTIVE, &val);
     if (err) {
         LOG_WRN("Fail to sensor_attr_set ANALOG_INPUT_ATTR_ACTIVE");
         rc = -EIO;
@@ -86,7 +86,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
 
 #if IS_ENABLED(CONFIG_TB6612FNG)
     if (config->motor_drv == OUTPUT_MOTORIZED_FADER_DRIVER_TB6612FNG) {
-    	struct sensor_value val = { .val1 = 0, .val2 = 0 };
+        struct sensor_value val = {.val1 = 0, .val2 = 0};
 
         const struct device *tb6612fng_dev = motor_dev;
 
@@ -101,8 +101,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
         if (value > sen_val) {
             // vel = -(value - sen_val);
             vel = -vec;
-        }
-        else if (value < sen_val) {
+        } else if (value < sen_val) {
             // vel = (sen_val - value);
             vel = vec;
         }
@@ -112,8 +111,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // enable enable pin, disable iif vel == 0
             val.val1 = (!vel) ? 0 : 1;
             val.val2 = 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) TB6612FNG_ATTR_ENABLE, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)TB6612FNG_ATTR_ENABLE, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_ENABLE");
             }
@@ -121,8 +120,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // set velocity and inversr flag
             val.val1 = abs(vel);
             val.val2 = vel < 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) TB6612FNG_ATTR_VELOCITY, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)TB6612FNG_ATTR_VELOCITY, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_VELOCITY");
             }
@@ -130,13 +129,12 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // call sync to latch velocity setting to driver
             val.val1 = chan;
             val.val2 = 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) TB6612FNG_ATTR_SYNC, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)TB6612FNG_ATTR_SYNC, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_SYNC");
             }
         }
-    
 
         while (true) {
             k_msleep(3);
@@ -168,8 +166,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             if (value > sen_val) {
                 // vel2 = -(value - sen_val);
                 vel2 = -abs(vel);
-            }
-            else if (value < sen_val) {
+            } else if (value < sen_val) {
                 // vel2 = (sen_val - value);
                 vel2 = abs(vel);
             }
@@ -181,8 +178,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // enable enable pin, disable iif vel == 0
                 val.val1 = (!vel) ? 0 : 1;
                 val.val2 = 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) TB6612FNG_ATTR_ENABLE, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)TB6612FNG_ATTR_ENABLE, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_ENABLE");
                 }
@@ -190,8 +187,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // set velocity and inversr flag
                 val.val1 = abs(vel);
                 val.val2 = vel < 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) TB6612FNG_ATTR_VELOCITY, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)TB6612FNG_ATTR_VELOCITY, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_VELOCITY");
                 }
@@ -199,32 +196,30 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // call sync to latch velocity setting to driver
                 val.val1 = chan;
                 val.val2 = 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) TB6612FNG_ATTR_SYNC, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)TB6612FNG_ATTR_SYNC, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_SYNC");
                 }
             }
-
         }
 
         // disable
         val.val1 = 0;
         val.val2 = 0;
-        err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                            (enum sensor_attribute) TB6612FNG_ATTR_ENABLE, &val);
+        err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                              (enum sensor_attribute)TB6612FNG_ATTR_ENABLE, &val);
         if (err) {
             LOG_WRN("Fail to sensor_attr_set TB6612FNG_ATTR_ENABLE");
             rc = -EIO;
             goto exit;
         }
-
     }
 #endif /* IS_ENABLED(CONFIG_TB6612FNG) */
 
 #if IS_ENABLED(CONFIG_DRV883X)
     if (config->motor_drv == OUTPUT_MOTORIZED_FADER_DRIVER_DRV883X) {
-    	struct sensor_value val = { .val1 = 0, .val2 = 0 };
+        struct sensor_value val = {.val1 = 0, .val2 = 0};
 
         const struct device *tb6612fng_dev = motor_dev;
 
@@ -239,8 +234,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
         if (value > sen_val) {
             // vel = -(value - sen_val);
             vel = -vec;
-        }
-        else if (value < sen_val) {
+        } else if (value < sen_val) {
             // vel = (sen_val - value);
             vel = vec;
         }
@@ -250,8 +244,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // enable enable pin, disable iif vel == 0
             val.val1 = (!vel) ? 0 : 1;
             val.val2 = 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)DRV883X_ATTR_ENABLE, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
             }
@@ -259,8 +253,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // set velocity and inversr flag
             val.val1 = abs(vel);
             val.val2 = vel < 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) DRV883X_ATTR_VELOCITY, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)DRV883X_ATTR_VELOCITY, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_VELOCITY");
             }
@@ -268,13 +262,12 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             // call sync to latch velocity setting to driver
             val.val1 = chan;
             val.val2 = 0;
-            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                (enum sensor_attribute) DRV883X_ATTR_SYNC, &val);
+            err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                  (enum sensor_attribute)DRV883X_ATTR_SYNC, &val);
             if (err) {
                 LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_SYNC");
             }
         }
-    
 
         while (true) {
             k_msleep(3);
@@ -306,8 +299,7 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
             if (value > sen_val) {
                 // vel2 = -(value - sen_val);
                 vel2 = -abs(vel);
-            }
-            else if (value < sen_val) {
+            } else if (value < sen_val) {
                 // vel2 = (sen_val - value);
                 vel2 = abs(vel);
             }
@@ -319,8 +311,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // enable enable pin, disable iif vel == 0
                 val.val1 = (!vel) ? 0 : 1;
                 val.val2 = 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)DRV883X_ATTR_ENABLE, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
                 }
@@ -328,8 +320,8 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // set velocity and inversr flag
                 val.val1 = abs(vel);
                 val.val2 = vel < 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) DRV883X_ATTR_VELOCITY, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)DRV883X_ATTR_VELOCITY, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_VELOCITY");
                 }
@@ -337,32 +329,30 @@ static int output_motorized_fader_set_value(const struct device *dev, uint8_t va
                 // call sync to latch velocity setting to driver
                 val.val1 = chan;
                 val.val2 = 0;
-                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                                    (enum sensor_attribute) DRV883X_ATTR_SYNC, &val);
+                err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                                      (enum sensor_attribute)DRV883X_ATTR_SYNC, &val);
                 if (err) {
                     LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_SYNC");
                 }
             }
-
         }
 
         // disable
         val.val1 = 0;
         val.val2 = 0;
-        err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL, 
-                            (enum sensor_attribute) DRV883X_ATTR_ENABLE, &val);
+        err = sensor_attr_set(tb6612fng_dev, SENSOR_CHAN_ALL,
+                              (enum sensor_attribute)DRV883X_ATTR_ENABLE, &val);
         if (err) {
             LOG_WRN("Fail to sensor_attr_set DRV883X_ATTR_ENABLE");
             rc = -EIO;
             goto exit;
         }
-
     }
 #endif /* IS_ENABLED(CONFIG_DRV883X) */
 
     val.val1 = 1;
-    err = sensor_attr_set(sensor_dev, SENSOR_CHAN_ALL, 
-                        (enum sensor_attribute) ANALOG_INPUT_ATTR_ACTIVE, &val);
+    err = sensor_attr_set(sensor_dev, SENSOR_CHAN_ALL,
+                          (enum sensor_attribute)ANALOG_INPUT_ATTR_ACTIVE, &val);
     if (err) {
         LOG_WRN("Fail to sensor_attr_set ANALOG_INPUT_ATTR_ACTIVE");
         rc = -EIO;
@@ -393,28 +383,26 @@ static const struct output_generic_api api = {
 
 #define ZMK_OUTPUT_INIT_PRIORITY 91
 
-#define OHFB_INST(n)                                                                \
-    static struct output_motorized_fader_data data_##n = { .busy = false, };        \
-    static const struct output_motorized_fader_config config_##n = {                \
-        .sensor_dev = COND_CODE_1(                                                  \
-                        DT_INST_NODE_HAS_PROP(n, sensor_device),                    \
-                        (DEVICE_DT_GET(DT_INST_PHANDLE(n, sensor_device))),         \
-                        (NULL)),                                                    \
-        .sensor_channel = DT_INST_PROP(n, sensor_channel),                          \
-        .motor_dev = COND_CODE_1(                                                   \
-                        DT_INST_NODE_HAS_PROP(n, motor_driver_device),              \
-                        (DEVICE_DT_GET(DT_INST_PHANDLE(n, motor_driver_device))),   \
-                        (NULL)),                                                    \
-        .motor_drv = DT_INST_ENUM_IDX_OR(0, motor_driver,                           \
-                                         OUTPUT_MOTORIZED_FADER_DRIVER_TB6612FNG),  \
-        .motor_channel = DT_INST_PROP(n, motor_channel),                            \
-        .proportional = DT_INST_PROP(n, proportional),                              \
-        .integral = DT_INST_PROP(n, integral),                                      \
-        .derivative = DT_INST_PROP(n, derivative),                                  \
-    };                                                                              \
-    DEVICE_DT_INST_DEFINE(0, output_motorized_fader_init, DEVICE_DT_INST_GET(n),    \
-                          &data_##n, &config_##n,                                   \
-                          POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
+#define OHFB_INST(n)                                                                               \
+    static struct output_motorized_fader_data data_##n = {                                         \
+        .busy = false,                                                                             \
+    };                                                                                             \
+    static const struct output_motorized_fader_config config_##n = {                               \
+        .sensor_dev = COND_CODE_1(DT_INST_NODE_HAS_PROP(n, sensor_device),                         \
+                                  (DEVICE_DT_GET(DT_INST_PHANDLE(n, sensor_device))), (NULL)),     \
+        .sensor_channel = DT_INST_PROP(n, sensor_channel),                                         \
+        .motor_dev =                                                                               \
+            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, motor_driver_device),                             \
+                        (DEVICE_DT_GET(DT_INST_PHANDLE(n, motor_driver_device))), (NULL)),         \
+        .motor_drv =                                                                               \
+            DT_INST_ENUM_IDX_OR(0, motor_driver, OUTPUT_MOTORIZED_FADER_DRIVER_TB6612FNG),         \
+        .motor_channel = DT_INST_PROP(n, motor_channel),                                           \
+        .proportional = DT_INST_PROP(n, proportional),                                             \
+        .integral = DT_INST_PROP(n, integral),                                                     \
+        .derivative = DT_INST_PROP(n, derivative),                                                 \
+    };                                                                                             \
+    DEVICE_DT_INST_DEFINE(0, output_motorized_fader_init, DEVICE_DT_INST_GET(n), &data_##n,        \
+                          &config_##n, POST_KERNEL, ZMK_OUTPUT_INIT_PRIORITY, &api);
 
 DT_INST_FOREACH_STATUS_OKAY(OHFB_INST)
 

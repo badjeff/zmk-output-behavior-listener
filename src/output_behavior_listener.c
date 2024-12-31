@@ -66,30 +66,26 @@ struct output_behavior_listener_data {
         .sources_count = DT_INST_PROP_LEN(n, sources),                                             \
         .sources = DT_INST_PROP(n, sources),                                                       \
         .has_position = DT_INST_NODE_HAS_PROP(n, position),                                        \
-        .position = COND_CODE_1(                                                                   \
-            DT_INST_NODE_HAS_PROP(n, position),                                                    \
-            (DT_INST_PROP(n, position)), (0)),                                                     \
+        .position =                                                                                \
+            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, position), (DT_INST_PROP(n, position)), (0)),     \
         .invert_state = DT_INST_PROP(n, invert_state),                                             \
         .all_state = DT_INST_PROP(n, all_state),                                                   \
         .tap_ms = DT_INST_PROP(n, tap_ms),                                                         \
         .layers_count = DT_INST_PROP_LEN(n, layers),                                               \
         .layers = DT_INST_PROP(n, layers),                                                         \
-        .bindings_count = COND_CODE_1(                                                             \
-            DT_INST_NODE_HAS_PROP(n, bindings),                                                    \
-            (DT_INST_PROP_LEN(n, bindings)), (0)),                                                 \
+        .bindings_count =                                                                          \
+            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, bindings), (DT_INST_PROP_LEN(n, bindings)), (0)), \
         .bindings = COND_CODE_1(                                                                   \
             DT_INST_NODE_HAS_PROP(n, bindings),                                                    \
-            ({LISTIFY(DT_INST_PROP_LEN(n, bindings), OBL_EXTRACT_BINDING, (, ), n)}),              \
-            ({})),                                                                                 \
+            ({LISTIFY(DT_INST_PROP_LEN(n, bindings), OBL_EXTRACT_BINDING, (, ), n)}), ({})),       \
     };
 
 DT_INST_FOREACH_STATUS_OKAY(OBL_INST)
 
 static void ob_behavior_listener_tap_cb(struct k_work *work) {
     struct k_work_delayable *work_delayable = (struct k_work_delayable *)work;
-    struct output_behavior_listener_data *data = CONTAINER_OF(work_delayable, 
-                                                              struct output_behavior_listener_data,
-                                                              tap_release_work);
+    struct output_behavior_listener_data *data =
+        CONTAINER_OF(work_delayable, struct output_behavior_listener_data, tap_release_work);
     LOG_DBG("");
     const struct output_behavior_listener_config *cfg = data->cfg;
     struct zmk_behavior_binding binding = cfg->bindings[data->tap_release_binding_idx];
@@ -108,7 +104,8 @@ static void ob_behavior_listener_tap_cb(struct k_work *work) {
     uint8_t layer = data->tap_release_layer;
     struct zmk_output_event *evt = data->tap_release_output_event;
     struct zmk_behavior_binding_event event = {
-        .layer = layer, .timestamp = k_uptime_get(),
+        .layer = layer,
+        .timestamp = k_uptime_get(),
         .position = (struct zmk_output_event *)evt, // util uint32_t to pass event ptr :)
     };
     LOG_DBG("call binding_released");
@@ -143,11 +140,10 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
     bool cfg_state = cfg->invert_state ? false : true;
     bool state_is_matched_cfg = evt->state == cfg_state;
 
-    if (evt->source == OUTPUT_SOURCE_LAYER_STATE_CHANGE
-    ||  evt->source == OUTPUT_SOURCE_POSITION_STATE_CHANGE
-    ||  evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE
-    ||  evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE
-    ) {
+    if (evt->source == OUTPUT_SOURCE_LAYER_STATE_CHANGE ||
+        evt->source == OUTPUT_SOURCE_POSITION_STATE_CHANGE ||
+        evt->source == OUTPUT_SOURCE_KEYCODE_STATE_CHANGE ||
+        evt->source == OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE) {
         if (evt->state != cfg_state && !cfg->all_state) {
             return false;
         }
@@ -175,7 +171,8 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
         if (api->binding_pressed || api->binding_released) {
 
             struct zmk_behavior_binding_event event = {
-                .layer = layer, .timestamp = k_uptime_get(),
+                .layer = layer,
+                .timestamp = k_uptime_get(),
                 .position = (struct zmk_output_event *)evt, // util uint32_t to pass event ptr :)
             };
 
@@ -195,36 +192,37 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
                         k_work_schedule(&data->tap_release_work, K_MSEC(cfg->tap_ms));
                     }
                 }
-            }
-            else if (api->binding_released && !evt->state) {
+            } else if (api->binding_released && !evt->state) {
                 ret = api->binding_released(&binding, event);
             }
 
-        }
-        else if (api->sensor_binding_process) {
+        } else if (api->sensor_binding_process) {
 
             struct zmk_behavior_binding_event event = {
-                .layer = layer, .timestamp = k_uptime_get(),
+                .layer = layer,
+                .timestamp = k_uptime_get(),
                 .position = 0,
             };
             if (api->sensor_binding_accept_data) {
-                const struct zmk_sensor_config *sensor_config = 
+                const struct zmk_sensor_config *sensor_config =
                     (const struct zmk_sensor_config *)cfg;
                 const struct zmk_sensor_channel_data val[] = {
-                    { .value = { .val1 = (struct zmk_output_event *)evt },
-                    .channel = SENSOR_CHAN_ALL, },
+                    {
+                        .value = {.val1 = (struct zmk_output_event *)evt},
+                        .channel = SENSOR_CHAN_ALL,
+                    },
                 };
-                int ret = behavior_sensor_keymap_binding_accept_data(
-                    &binding, event, sensor_config, sizeof(val), val);
+                int ret = behavior_sensor_keymap_binding_accept_data(&binding, event, sensor_config,
+                                                                     sizeof(val), val);
                 if (ret < 0) {
                     LOG_WRN("behavior data accept for behavior %s returned an error (%d). "
-                            "Processing to continue to next layer",  binding.behavior_dev, ret);
+                            "Processing to continue to next layer",
+                            binding.behavior_dev, ret);
                 }
             }
             enum behavior_sensor_binding_process_mode mode =
-                    BEHAVIOR_SENSOR_BINDING_PROCESS_MODE_TRIGGER;
+                BEHAVIOR_SENSOR_BINDING_PROCESS_MODE_TRIGGER;
             ret = behavior_sensor_keymap_binding_process(&binding, event, mode);
-
         }
 
         if (ret == ZMK_BEHAVIOR_OPAQUE) {
@@ -243,10 +241,10 @@ static bool intercept_with_output_config(const struct output_behavior_listener_c
 static int zmk_output_event_triggered(struct zmk_output_event *ev) {
     bool intercepted = false;
 
-    #define EXEC__OUTPUT_BEHAVIOR_LISTENER(n)                                            \
-        if (!intercepted) {                                                              \
-            intercepted = intercept_with_output_config(&config_##n, &data_##n, ev);      \
-        }
+#define EXEC__OUTPUT_BEHAVIOR_LISTENER(n)                                                          \
+    if (!intercepted) {                                                                            \
+        intercepted = intercept_with_output_config(&config_##n, &data_##n, ev);                    \
+    }
 
     DT_INST_FOREACH_STATUS_OKAY(EXEC__OUTPUT_BEHAVIOR_LISTENER)
 
@@ -262,12 +260,11 @@ static int output_event_listener(const zmk_event_t *ev) {
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
-    struct zmk_output_event e = (struct zmk_output_event){
-        .layer = zmk_keymap_highest_layer_active(),
-        .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-        .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
-        .timestamp = k_uptime_get()
-    };
+    struct zmk_output_event e =
+        (struct zmk_output_event){.layer = zmk_keymap_highest_layer_active(),
+                                  .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+                                  .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                                  .timestamp = k_uptime_get()};
 
     const struct zmk_layer_state_changed *lay_ev;
     if ((lay_ev = as_zmk_layer_state_changed(ev)) != NULL) {
@@ -317,12 +314,11 @@ void ouput_input_handler(struct input_event *evt) {
         case INPUT_BTN_2:
         case INPUT_BTN_3:
         case INPUT_BTN_4:
-            struct zmk_output_event e = (struct zmk_output_event){
-                .layer = zmk_keymap_highest_layer_active(),
-                .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-                .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
-                .timestamp = k_uptime_get()
-            };
+            struct zmk_output_event e =
+                (struct zmk_output_event){.layer = zmk_keymap_highest_layer_active(),
+                                          .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+                                          .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                                          .timestamp = k_uptime_get()};
             e.source = OUTPUT_SOURCE_MOUSE_BUTTON_STATE_CHANGE;
             e.position = 1 + evt->code - INPUT_BTN_0;
             e.state = evt->value > 0;
@@ -336,12 +332,11 @@ void ouput_input_handler(struct input_event *evt) {
     case INPUT_EV_REL:
         switch (evt->code) {
         case INPUT_REL_WHEEL:
-            struct zmk_output_event e = (struct zmk_output_event){
-                .layer = zmk_keymap_highest_layer_active(),
-                .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
-                .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
-                .timestamp = k_uptime_get()
-            };
+            struct zmk_output_event e =
+                (struct zmk_output_event){.layer = zmk_keymap_highest_layer_active(),
+                                          .force = CONFIG_ZMK_OUTPUT_DEFAULT_FORCE,
+                                          .value = CONFIG_ZMK_OUTPUT_DEFAULT_DURATION,
+                                          .timestamp = k_uptime_get()};
             e.source = OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE;
             e.position = evt->value;
             e.state = evt->value != 0;
