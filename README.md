@@ -4,11 +4,13 @@ This module add behaviors to output device for ZMK.
 
 ## What it does
 
-It allows to config a feedback of state change event by binding behaviors to feedback devices, such as, eccentric rotating mass (ERM) motors, Linear Resonant Actuator (LRA) vibration motors, LED indicators, serve motors, etc. It is made for simulating various feedback effect pattern in a designed sequence on devices simultaneously.
+It allows to config a feedback of state change event by binding behaviors to feedback devices, such as, eccentric rotating mass (ERM) motors, Linear Resonant Actuator (LRA) vibration motors, LED indicators, serve motors, motorized fader, etc. It is made for simulating various feedback effect pattern in a designed sequence on devices simultaneously.
 
 There is an extension module [zmk-split-peripheral-output-relay](https://github.com/badjeff/zmk-split-peripheral-output-relay) that proxies output to split peripherals  via bluetooth.
 
 To drive LRA, it is recommended to drive it with [DRV2605L Haptic Motor Controller](https://www.adafruit.com/product/2305) and [zmk-drv2605-driver](https://github.com/badjeff/zmk-drv2605-driver).
+
+To drive motorized fader, such as [ALPS RS60N11M9A0F](https://tech.alpsalpine.com/e/products/detail/RS60N11M9A0F/), two motor driver options is currently available, [DRV883x](https://github.com/badjeff/zmk-drv883x-driver) and [TB6612FNG](https://github.com/badjeff/zmk-tb6612fng-driver). To keep tracking the postion of the fader and reflecting the volume value from the host app, [zmk-analog-input-driver](https://github.com/badjeff/zmk-analog-input-driver) is used to keep reading fader's liner pot via ADC pin. Also, there is a experimental [host app (for macOS only)](https://github.com/badjeff/zmk-companion-macos) demonstrates how to send volume value from host to peripheral via raw HID report with [zmk-hid-io](https://github.com/badjeff/zmk-hid-io).
 
 ## Installation
 
@@ -55,6 +57,26 @@ Now, update your `board.overlay` adding the necessary bits (update the pins for 
 		compatible = "zmk,output-pwm";
 		#binding-cells = <0>;
 		pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+	};
+
+        /* setup motorized fader */
+        fader_motor0: fader_motor_0 {
+		compatible = "zmk,output-motorized-fader";
+		#binding-cells = <0>;
+                
+                /* define `zmk-analog-input-driver` device to track the position of fader via ADC pin */
+                sensor-device = <&anin0>;
+                sensor-channel = <0>;
+
+                /* choose drv883x as the motor driver */
+                motor-driver-device = <&drv883x_0>;
+                motor-driver = "drv883x";
+                /* alternative motor driver option */
+                // motor-driver-device = <&tb6612fng_0>;
+                // motor-driver = "tb6612fng";
+
+                /* motor output channel, both drivers have 2 channel 0/1 */
+                motor-channel = <0>;
 	};
 };
 ```
@@ -249,6 +271,22 @@ Now, update your `shield.keymap` adding the behaviors.
                 /* trigger on mouse wheel status change */
                 sources = < OUTPUT_SOURCE_MOUSE_WHEEL_STATE_CHANGE >;
                 bindings = < &ob_erm0_in >;
+        };
+
+        /* setup listener to read HID report from host app, and reflect volume value on motorized fader */
+        fader_transport {
+                compatible = "zmk,output-behavior-listener";
+                layers = <DEFAULT>;
+                /* trigger on RAW HID report */
+                sources = <OUTPUT_SOURCE_TRANSPORT>;
+                bindings = <&ob_fader_motor>;
+        };
+        ob_fader_motor: ob_fader_motor {
+                compatible = "zmk,output-behavior-generic";
+                #binding-cells = <0>;
+                device = <&fader_motor0>;
+                /* mark as positional-force, prefer the `force` from event, instead of static value from this config node */
+                positional;
         };
 
         keymap {
