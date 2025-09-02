@@ -258,7 +258,7 @@ static int output_event_listener(const zmk_event_t *ev) {
         return ret;
     }
 
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
     struct zmk_output_event e =
         (struct zmk_output_event){.layer = zmk_keymap_highest_layer_active(),
@@ -289,7 +289,7 @@ static int output_event_listener(const zmk_event_t *ev) {
         e.state = kc_ev->state;
         zmk_output_event_triggered(&e); // raise_zmk_output_event(e);
     }
-#endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
+#endif /* !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 
     return 0;
 }
@@ -297,7 +297,7 @@ static int output_event_listener(const zmk_event_t *ev) {
 ZMK_LISTENER(output_event_listener, output_event_listener);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_output_event);
 
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
 ZMK_SUBSCRIPTION(output_event_listener, zmk_layer_state_changed);
 ZMK_SUBSCRIPTION(output_event_listener, zmk_position_state_changed);
@@ -354,6 +354,6 @@ INPUT_CALLBACK_DEFINE(NULL, ouput_input_handler);
 
 #endif /* IS_ENABLED(CONFIG_INPUT) */
 
-#endif /* IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
+#endif /* !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
 
 // #endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */
